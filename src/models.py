@@ -56,7 +56,7 @@ def model1():
     decoded_2 = Reshape((dim,dim), input_shape=(dim, dim, 1))(x2);
     
     autoencoder_comb = Model([inputs_1,inputs_2], [decoded_1,decoded_2])
-    plot_model(autoencoder_comb, show_shapes=True, to_file='model_auto_comb.png')
+    plot_model(autoencoder_comb, show_shapes=True, to_file='data/model_auto_comb.png')
     
     partialNetwork = Model([inputs_1,inputs_2], encoded)
     
@@ -118,7 +118,7 @@ def model2():
     decoded_2 = Reshape((dim,dim), input_shape=(dim, dim, 1))(x2);
        
     autoencoder_comb = Model([inputs_1,inputs_2], [decoded_1,decoded_2])
-    plot_model(autoencoder_comb, show_shapes=True, to_file='model_auto_comb_sigmoid.png')
+    plot_model(autoencoder_comb, show_shapes=True, to_file='data/model_auto_comb_sigmoid.png')
     
     partialNetwork = Model([inputs_1,inputs_2], encoded)
     
@@ -166,7 +166,7 @@ def model3_oneInput():
     
     
     autoencoder_comb = Model([inputs_V,inputs_A], [decoded_1,decoded_2])
-    plot_model(autoencoder_comb, show_shapes=True, to_file='171124_model_oneInput.png')
+    plot_model(autoencoder_comb, show_shapes=True, to_file='data/171124_model_oneInput.png')
 
     partialNetwork = Model([inputs_V,inputs_A], encoded)
     

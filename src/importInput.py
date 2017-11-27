@@ -96,7 +96,7 @@ def importInput():
     audioDataToSave.append(yTestAudio);
     
     
-    output_audio = open('audioInput.pkl', 'wb')
+    output_audio = open('data/audioInput.pkl', 'wb')
     pickle.dump(audioDataToSave, output_audio)
     output_audio.close()
     
@@ -158,7 +158,7 @@ def importInput():
     visualDataToSave.append(yTestMnist);
     
     
-    output_visual = open('visualInput.pkl', 'wb')
+    output_visual = open('data/visualInput.pkl', 'wb')
     pickle.dump(visualDataToSave, output_visual)
     output_visual.close()
     

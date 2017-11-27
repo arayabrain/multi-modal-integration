@@ -98,7 +98,7 @@ print("** model is loaded and compiled")
 
 
 ## loading trained weights from the previously trained model 
-model_full.load_weights('autoencoder_comb_3000it.h5')
+model_full.load_weights('data/autoencoder_comb_3000it.h5')
 # model_full.load_weights('171122_autoencoder_comb_sigmoid.h5')
 # model_full.load_weights('171122_autoencoder_oneLayer.h5');
 
