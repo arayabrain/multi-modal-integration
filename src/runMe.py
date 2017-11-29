@@ -14,7 +14,7 @@ import analysis
 
 
 ## load Inputs ##
-pkl_file = open('audioInput.pkl', 'rb')
+pkl_file = open('data/audioInput.pkl', 'rb')
 data = pickle.load(pkl_file)
 pkl_file.close();
 xTrainAudio = data[0];
@@ -25,7 +25,7 @@ xTestAudio = data[4];
 yTestAudio = data[5];
 print("** audio input loaded **")
 
-pkl_file = open('visualInput.pkl', 'rb')
+pkl_file = open('data/visualInput.pkl', 'rb')
 data = pickle.load(pkl_file)
 pkl_file.close();
 xTrainVisual = data[0];
@@ -79,10 +79,14 @@ print("** created: xTrainMnist_comb, xTrainAudio_comb, xTestMnist_comb_allon, xT
 
 ## load model ##
 import models
-model_full, model_partial = models.model1();
+# model_full, model_partial = models.model1();
 # model_full, model_partial = models.model3_oneInput();
+model_full, model_partial = models.model4_dense();
+# model_full, model_partial = models.model5_dense_sparse();
+
 model_full.compile(optimizer='adadelta', loss='binary_crossentropy')
 model_partial.compile(optimizer='adadelta', loss='binary_crossentropy')
+# model_full.load_weights('data/171127_autoencoder_oneInput_itr_0.weights');
 untrainedWeights_full = model_full.get_weights();
 untrainedWeights_partial = model_partial.get_weights();
 
@@ -98,9 +102,13 @@ print("** model is loaded and compiled")
 
 
 ## loading trained weights from the previously trained model 
-model_full.load_weights('data/autoencoder_comb_3000it.h5')
-# model_full.load_weights('171122_autoencoder_comb_sigmoid.h5')
-# model_full.load_weights('171122_autoencoder_oneLayer.h5');
+# model_full.load_weights('data/autoencoder_comb_3000it.h5')
+# model_full.load_weights('data/171122_autoencoder_comb_sigmoid.h5')
+# model_full.load_weights('data/171127_autoencoder_oneInput_itr_5000.weights');
+model_full.load_weights('data/171128_autoencoder_dense_itr_10000.weights');
+# model_full.load_weights('data/171129_autoencoder_dense_sparse_itr_4000.weights');
+
+
 
 
 print("** weights are set")
@@ -108,9 +116,9 @@ trainedWeights_full = model_full.get_weights();
 trainedWeights_partial=model_partial.get_weights()
 
 ## plot results
-# plotting.plotResults(model,emptyInput,xTestAudio);
-# plotting.plotResults(model,xTestVisual,emptyInput);
-# plotting.plotResults(model,xTestVisual,xTestAudio);
+# plotting.plotResults(model_full,emptyInput,xTestAudio);
+# plotting.plotResults(model_full,xTestVisual,emptyInput);
+# plotting.plotResults(model_full,xTestVisual,xTestAudio);
 
 
 ## analysis over the middle layer
@@ -121,12 +129,29 @@ model_partial.set_weights(trainedWeights_partial);
 predictedResult_trained = model_partial.predict([xTrainVisual_comb, xTrainAudio_comb]);
 
 
+# run PCA
+shape = np.shape(predictedResult_trained);
+results_forPCA = predictedResult_trained.reshape(shape[0],np.size(predictedResult_trained[0]));
+analysis.runPCA(results_forPCA);
+
+
+
+
+
+
+
+
 # info analysis for all V only, A only, V+A
 nObj = 10;
 nTrans = 50*3;
 nRow = np.shape(predictedResult_untrained)[1];
-nCol = np.shape(predictedResult_untrained)[2];
-nDep = np.shape(predictedResult_untrained)[3];
+nCol = np.shape(predictedResult_untrained)[2] if len(np.shape(predictedResult_untrained))>2 else 1;
+nDep = np.shape(predictedResult_untrained)[3] if len(np.shape(predictedResult_untrained))>3 else 1;
+
+if len(np.shape(predictedResult_untrained))<4:
+    shape = np.shape(predictedResult_untrained);
+    predictedResult_untrained = predictedResult_untrained.reshape((shape[0],nRow,nCol,nDep));
+    predictedResult_trained = predictedResult_trained.reshape((shape[0],nRow,nCol,nDep));
   
 results_reshaped_for_analysis_untrained = np.zeros((nObj,nTrans,nRow,nCol,nDep))
 results_reshaped_for_analysis_trained = np.zeros((nObj,nTrans,nRow,nCol,nDep))
@@ -142,7 +167,7 @@ for s in range(nObj):
 IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=False,nBins=3)
 # IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True,thresholdMode=True)
 # IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis_avg(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True)
-# plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_weighted_list[1],results=results_reshaped_for_analysis_trained);
+plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_weighted_list[1],results=results_reshaped_for_analysis_trained);
 
 
 results_all_trained = results_reshaped_for_analysis_trained;
@@ -230,6 +255,6 @@ IRs_list_AOnly, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_resh
 # plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_weighted_list[1],results=results_all_trained,title="based on info about A");
 
 
-analysis.countCellsWithSelectivity(IRs_list_VOnly,IRs_list_AOnly,results_all_trained,plotOn=True);
+analysis.countCellsWithSelectivity(IRs_list_VOnly,IRs_list_AOnly,results_all_trained,plotOn=False);
 
 

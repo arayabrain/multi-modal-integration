@@ -2,6 +2,7 @@ from keras.utils import plot_model
 from keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D, maximum,concatenate, Reshape, add, Dropout, Activation
 from keras.models import Model
 from keras import backend as K
+from keras import regularizers
 from params import *
 
 
@@ -133,13 +134,13 @@ def model3_oneInput():
     x1 = concatenate([inputs_V, inputs_A]);
     x1 = Dense(28)(x1);
     x1 = Reshape((dim,dim,1), input_shape=(dim, dim))(x1);
-    x1 = Conv2D(16, (3, 3), activation='relu', padding='same')(x1)
-    x1 = MaxPooling2D((2, 2), padding='same')(x1)
+    pool1 = Conv2D(16, (3, 3), activation='relu', padding='same')(x1)
+    x1 = MaxPooling2D((2, 2), padding='same')(pool1)
     x1 = Conv2D(8, (3, 3), activation='relu', padding='same')(x1)
-    x1 = MaxPooling2D((2, 2), padding='same')(x1)
-    x1 = Conv2D(8, (3, 3), activation='relu', padding='same')(x1)
-    x1 = MaxPooling2D((2, 2), padding='same')(x1)
-    encoded = Activation('sigmoid')(x1);
+    pool2 = MaxPooling2D((2, 2), padding='same')(x1)
+    x1 = Conv2D(8, (3, 3), activation='relu', padding='same')(pool2)
+    pool3 = MaxPooling2D((2, 2), padding='same')(x1)
+    encoded = Activation('sigmoid')(pool3);
     # encoded = Dropout(0.4)(x1)
     
     # encoded = Dense(8,activation='sigmoid')(x1);
@@ -168,10 +169,94 @@ def model3_oneInput():
     autoencoder_comb = Model([inputs_V,inputs_A], [decoded_1,decoded_2])
     plot_model(autoencoder_comb, show_shapes=True, to_file='data/171124_model_oneInput.png')
 
-    partialNetwork = Model([inputs_V,inputs_A], encoded)
+#     partialNetwork = Model([inputs_V,inputs_A], encoded)
+    partialNetwork = Model([inputs_V,inputs_A],encoded);
+    print("** model constructed **")
     
     return (autoencoder_comb, partialNetwork);
     
-    print("** model constructed **")
    
+   
+def model4_dense():
+    ## IMAGE
+
+    layerDim = 124;
+    
+    inputs_V = Input(shape=(dim,dim,))
+    inputs_V_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_V);
+    inputs_A = Input(shape=(dim,dim,))
+    inputs_A_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_A);
+    
+    
+    x1 = concatenate([inputs_V_reshaped, inputs_A_reshaped]);
+    l1 = Dense(layerDim, activation='sigmoid')(x1);
+    l2 = Dense(layerDim, activation='sigmoid')(l1)
+    encoded = Dense(layerDim, activation='sigmoid')(l2)
+    
+    
+    x1 = Dense(layerDim, activation='sigmoid')(encoded)
+    x1 = Dense(layerDim, activation='sigmoid')(x1)
+    x1 = Dense(dim*dim, activation='sigmoid')(x1)
+    decoded_1 =  Reshape((dim,dim), input_shape=(dim*dim,1))(x1);
+    
+    x2 = Dense(layerDim, activation='sigmoid')(encoded)
+    x2 = Dense(layerDim, activation='sigmoid')(x2)
+    x2 = Dense(dim*dim, activation='sigmoid')(x2)
+    decoded_2 = Reshape((dim,dim), input_shape=(dim*dim,1))(x2);
+    
+    
+    autoencoder_comb = Model([inputs_V,inputs_A], [decoded_1,decoded_2])    
+    plot_model(autoencoder_comb, show_shapes=True, to_file='171128_model_dense.png')
+    
+    
+#     partialNetwork = Model([inputs_V,inputs_A],l1);
+#     partialNetwork = Model([inputs_V,inputs_A],l2);
+    partialNetwork = Model([inputs_V,inputs_A],encoded);
+    
+    print("** model constructed **")
+    
+    return (autoencoder_comb, partialNetwork);
+   
+def model5_dense_sparse():
+    ## IMAGE
+
+    layerDim = 124;
+    
+    inputs_V = Input(shape=(dim,dim,))
+    inputs_V_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_V);
+    inputs_V_reg = Dense(dim*dim,activity_regularizer=regularizers.l1(10e-5))(inputs_V_reshaped);
+    
+    inputs_A = Input(shape=(dim,dim,))
+    inputs_A_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_A);
+    inputs_A_reg = Dense(dim*dim,activity_regularizer=regularizers.l1(10e-5))(inputs_A_reshaped);
+    
+    
+    x1 = concatenate([inputs_V_reg, inputs_A_reg]);
+    l1 = Dense(layerDim, activation='sigmoid',activity_regularizer=regularizers.l1(10e-5))(x1);
+    l2 = Dense(layerDim, activation='sigmoid',activity_regularizer=regularizers.l1(10e-5))(l1)
+    encoded = Dense(layerDim, activation='sigmoid',activity_regularizer=regularizers.l1(10e-5))(l2)
+    
+    
+    x1 = Dense(layerDim, activation='sigmoid')(encoded)
+    x1 = Dense(layerDim, activation='sigmoid')(x1)
+    x1 = Dense(dim*dim, activation='sigmoid')(x1)
+    decoded_1 =  Reshape((dim,dim), input_shape=(dim*dim,1))(x1);
+    
+    x2 = Dense(layerDim, activation='sigmoid')(encoded)
+    x2 = Dense(layerDim, activation='sigmoid')(x2)
+    x2 = Dense(dim*dim, activation='sigmoid')(x2)
+    decoded_2 = Reshape((dim,dim), input_shape=(dim*dim,1))(x2);
+    
+    
+    autoencoder_comb = Model([inputs_V,inputs_A], [decoded_1,decoded_2])    
+    plot_model(autoencoder_comb, show_shapes=True, to_file='171128_model_dense_sparse.png')
+    
+    
+#     partialNetwork = Model([inputs_V,inputs_A],l1);
+#     partialNetwork = Model([inputs_V,inputs_A],l2);
+    partialNetwork = Model([inputs_V,inputs_A],encoded);
+    
+    print("** model constructed **")
+    
+    return (autoencoder_comb, partialNetwork);
    
