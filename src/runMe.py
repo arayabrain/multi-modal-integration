@@ -43,6 +43,53 @@ print("** visual input loaded **")
 nTestSet = len(xTrainAudio);
 nTrainSet = nTestSet;
 emptyInput = np.zeros((nTrainSet,dim,dim));
+
+
+
+
+# param for training set
+nObj = 10;
+nTransForEachCombination = 50*10;
+nTrans = 50;#number of trans for loaded dataset
+# combinations: V + A, V only, and A only
+# total number of presentation: (nTransForEachCombination*3)*nObj
+
+xTrainV_comb = np.zeros((nObj*3*nTransForEachCombination,dim,dim));
+xTrainA_comb = np.zeros((nObj*3*nTransForEachCombination,dim,dim));
+xTrainV_allOn = np.zeros((nObj*3*nTransForEachCombination,dim,dim));
+xTrainA_allOn = np.zeros((nObj*3*nTransForEachCombination,dim,dim));
+
+for o in range(nObj):
+    #V+A
+    shuffleOrder = (np.random.permutation(nTransForEachCombination)%nTrans) + o*nTrans;
+    xTrainV_comb[o*(nTransForEachCombination*3):o*(nTransForEachCombination*3)+nTransForEachCombination]=xTrainVisual[shuffleOrder];
+    xTrainV_allOn[o*(nTransForEachCombination*3):o*(nTransForEachCombination*3)+nTransForEachCombination]=xTrainVisual[shuffleOrder];
+
+    shuffleOrder = (np.random.permutation(nTransForEachCombination)%nTrans) + o*nTrans;
+    xTrainA_comb[o*(nTransForEachCombination*3):o*(nTransForEachCombination*3)+nTransForEachCombination]=xTrainAudio[shuffleOrder];
+    xTrainA_allOn[o*(nTransForEachCombination*3):o*(nTransForEachCombination*3)+nTransForEachCombination]=xTrainAudio[shuffleOrder];
+    
+    #V only
+    shuffleOrder = (np.random.permutation(nTransForEachCombination)%nTrans) + o*nTrans;
+    xTrainV_comb[o*(nTransForEachCombination*3)+nTransForEachCombination:o*(nTransForEachCombination*3)+nTransForEachCombination*2]=xTrainVisual[shuffleOrder];
+    xTrainV_allOn[o*(nTransForEachCombination*3)+nTransForEachCombination:o*(nTransForEachCombination*3)+nTransForEachCombination*2]=xTrainVisual[shuffleOrder];
+
+    xTrainA_comb[o*(nTransForEachCombination*3)+nTransForEachCombination:o*(nTransForEachCombination*3)+nTransForEachCombination*2]=emptyInput[shuffleOrder];
+    xTrainA_allOn[o*(nTransForEachCombination*3)+nTransForEachCombination:o*(nTransForEachCombination*3)+nTransForEachCombination*2]=xTrainAudio[shuffleOrder];
+    
+    #A only
+    shuffleOrder = (np.random.permutation(nTransForEachCombination)%nTrans) + o*nTrans;
+    xTrainV_comb[o*(nTransForEachCombination*3)+nTransForEachCombination*2:o*(nTransForEachCombination*3)+nTransForEachCombination*3]=emptyInput[shuffleOrder];
+    xTrainV_allOn[o*(nTransForEachCombination*3)+nTransForEachCombination*2:o*(nTransForEachCombination*3)+nTransForEachCombination*3]=xTrainVisual[shuffleOrder];
+
+    xTrainA_comb[o*(nTransForEachCombination*3)+nTransForEachCombination*2:o*(nTransForEachCombination*3)+nTransForEachCombination*3]=xTrainAudio[shuffleOrder];
+    xTrainA_allOn[o*(nTransForEachCombination*3)+nTransForEachCombination*2:o*(nTransForEachCombination*3)+nTransForEachCombination*3]=xTrainAudio[shuffleOrder];
+ 
+
+
+
+
+
  
 #create a combined input to test combinations of A and V (V only, A only, and V+A)
 xTrainVisual_comb = np.zeros((nTrainSet*3,dim,dim));
@@ -82,7 +129,7 @@ import models
 # model_full, model_partial = models.model1();
 # model_full, model_partial = models.model3_oneInput();
 model_full, model_partial = models.model4_dense();
-# model_full, model_partial = models.model5_dense_sparse();
+# model_full, model_partial = models.model6_dense_4layers();
 
 model_full.compile(optimizer='adadelta', loss='binary_crossentropy')
 model_partial.compile(optimizer='adadelta', loss='binary_crossentropy')
@@ -105,8 +152,8 @@ print("** model is loaded and compiled")
 # model_full.load_weights('data/autoencoder_comb_3000it.h5')
 # model_full.load_weights('data/171122_autoencoder_comb_sigmoid.h5')
 # model_full.load_weights('data/171127_autoencoder_oneInput_itr_5000.weights');
-model_full.load_weights('data/171128_autoencoder_dense_itr_10000.weights');
-# model_full.load_weights('data/171129_autoencoder_dense_sparse_itr_4000.weights');
+model_full.load_weights('data/171128_autoencoder_dense_itr_0.weights');
+# model_full.load_weights('data/171128_model_dense_4layers_itr_20000.weights');
 
 
 
@@ -115,10 +162,17 @@ print("** weights are set")
 trainedWeights_full = model_full.get_weights();
 trainedWeights_partial=model_partial.get_weights()
 
-## plot results
-# plotting.plotResults(model_full,emptyInput,xTestAudio);
+
+
+
+# ## plot results
 # plotting.plotResults(model_full,xTestVisual,emptyInput);
+# plotting.plotResults(model_full,emptyInput,xTestAudio);
 # plotting.plotResults(model_full,xTestVisual,xTestAudio);
+
+
+
+
 
 
 ## analysis over the middle layer
@@ -127,6 +181,58 @@ predictedResult_untrained = model_partial.predict([xTrainVisual_comb, xTrainAudi
 # model_partial.set_weights(model_full.get_weights()[:len(model_partial.weights)]);
 model_partial.set_weights(trainedWeights_partial);
 predictedResult_trained = model_partial.predict([xTrainVisual_comb, xTrainAudio_comb]);
+
+
+
+
+## calculate mutual info
+shape = np.shape(xTrainVisual_comb);
+inputs_forMutual_V = xTrainVisual_comb.reshape(shape[0],np.size(xTrainVisual_comb[0]));
+inputs_forMutual_A = xTrainAudio_comb.reshape(shape[0],np.size(xTrainAudio_comb[0]));
+
+shape = np.shape(predictedResult_trained);
+results_forMutual_trained = predictedResult_trained.reshape(shape[0],np.size(predictedResult_trained[0]));
+results_forMutual_untrained = predictedResult_untrained.reshape(shape[0],np.size(predictedResult_untrained[0]));
+IV_untrained = analysis.mutualInfo(inputs_forMutual_V,results_forMutual_untrained)
+IA_untrained = analysis.mutualInfo(inputs_forMutual_A,results_forMutual_untrained)
+IV_trained = analysis.mutualInfo(inputs_forMutual_V,results_forMutual_trained)
+IA_trained = analysis.mutualInfo(inputs_forMutual_A,results_forMutual_trained)
+
+
+print("** IV_untrained -- min: " + str(np.min(IV_untrained)) + ", max: " + str(np.max(IV_untrained)) + ", mean: " + str(np.mean(IV_untrained)));
+print("** IA_untrained -- min: " + str(np.min(IA_untrained)) + ", max: " + str(np.max(IA_untrained)) + ", mean: " + str(np.mean(IA_untrained)));
+print("** IV_Trained -- min: " + str(np.min(IV_trained)) + ", max: " + str(np.max(IV_trained)) + ", mean: " + str(np.mean(IV_trained)));
+print("** IA_Trained -- min: " + str(np.min(IA_trained)) + ", max: " + str(np.max(IA_trained)) + ", mean: " + str(np.mean(IA_trained)));
+
+plt.subplot(2,2,1);
+# plt.gray()
+im = plt.imshow(IV_untrained,vmin=0,vmax=1, aspect="auto");
+plt.colorbar(im)
+plt.title("Visual inputs (Untrained)");
+plt.xlabel("Encoded Units");
+plt.ylabel("Input Units")
+plt.subplot(2,2,2);
+im = plt.imshow(IA_untrained,vmin=0,vmax=1, aspect="auto");
+plt.colorbar(im)
+plt.title("Audio inputs (Untrained)");
+plt.xlabel("Encoded Units");
+plt.ylabel("Input Units")
+
+plt.subplot(2,2,3)
+im = plt.imshow(IV_trained,vmin=0,vmax=1, aspect="auto");
+plt.colorbar(im)
+plt.title("Visual inputs (Trained)");
+plt.xlabel("Encoded Units");
+plt.ylabel("Input Units")
+
+plt.subplot(2,2,4);
+im = plt.imshow(IA_trained,vmin=0,vmax=1, aspect="auto");
+plt.colorbar(im)
+plt.title("Audio inputs (Trained)");
+plt.xlabel("Encoded Units");
+plt.ylabel("Input Units")
+plt.show()
+
 
 
 # run PCA

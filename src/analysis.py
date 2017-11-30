@@ -324,53 +324,55 @@ def countCellsWithSelectivity(infoList1, infoList2, results, plotOn=True,infoThr
         
 def runPCA(results):
     
-    N = 2
+    N = 3
     nObj = 10;
     nTrans = 50;
     pca = PCA(n_components=N)
 #     trans = pca.fit(results)
     trans = pca.fit_transform(results)
+    comp1=0;
+    comp2=1;
     
 #     'b', 'g', 'r', 'c', 'm', 'y', 'k', 
     r,g,b = (0,0,0)
-    plt.plot(trans[50*0:50*(0+1),0], trans[50*0:50*(0+1),1], '*', markersize=7, color=(r, g, b, 1), alpha=0.5, label='v-0')
-    plt.plot(trans[50*10:50*(10+1),0], trans[50*10:50*(10+1),1], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5, label='a-0')
+    plt.plot(trans[50*0:50*(0+1),comp1], trans[50*0:50*(0+1),comp2], '*', markersize=7, color=(r, g, b, 1), alpha=0.5, label='v-0')
+    plt.plot(trans[50*10:50*(10+1),comp1], trans[50*10:50*(10+1),comp2], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5, label='a-0')
     
     r,g,b = (0,0,1)
-    plt.plot(trans[50*1:50*(1+1),0], trans[50*1:50*(1+1),1], '*', markersize=7, color=(r, g, b, 1), alpha=0.5, label='v-1')
-    plt.plot(trans[50*11:50*(11+1),0], trans[50*11:50*(11+1),1], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5, label='a-1')
+    plt.plot(trans[50*1:50*(1+1),comp1], trans[50*1:50*(1+1),comp2], '*', markersize=7, color=(r, g, b, 1), alpha=0.5, label='v-1')
+    plt.plot(trans[50*11:50*(11+1),comp1], trans[50*11:50*(11+1),comp2], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5, label='a-1')
     
     r,g,b = (0,1,0)
-    plt.plot(trans[50*2:50*(2+1),0], trans[50*2:50*(2+1),1], '*', markersize=7, color=(r, g, b, 1), alpha=0.5, label='v-2')
-    plt.plot(trans[50*12:50*(12+1),0], trans[50*12:50*(12+1),1], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5, label='a-2')
+    plt.plot(trans[50*2:50*(2+1),comp1], trans[50*2:50*(2+1),comp2], '*', markersize=7, color=(r, g, b, 1), alpha=0.5, label='v-2')
+    plt.plot(trans[50*12:50*(12+1),comp1], trans[50*12:50*(12+1),comp2], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5, label='a-2')
     
     r,g,b = (0,1,1)
-    plt.plot(trans[50*3:50*(3+1),0], trans[50*3:50*(3+1),1], '*', markersize=7, color=(r, g, b, 1), alpha=0.5, label='v-3')
-    plt.plot(trans[50*13:50*(13+1),0], trans[50*13:50*(13+1),1], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5, label='a-3')
+    plt.plot(trans[50*3:50*(3+1),comp1], trans[50*3:50*(3+1),comp2], '*', markersize=7, color=(r, g, b, 1), alpha=0.5, label='v-3')
+    plt.plot(trans[50*13:50*(13+1),comp1], trans[50*13:50*(13+1),comp2], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5, label='a-3')
     
     r,g,b = (1,0,0)
-    plt.plot(trans[50*4:50*(4+1),0], trans[50*4:50*(4+1),1], '*', markersize=7, color=(r, g, b, 1), alpha=0.5, label='v-4')
-    plt.plot(trans[50*14:50*(14+1),0], trans[50*14:50*(14+1),1], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5, label='a-4')
+    plt.plot(trans[50*4:50*(4+1),comp1], trans[50*4:50*(4+1),comp2], '*', markersize=7, color=(r, g, b, 1), alpha=0.5, label='v-4')
+    plt.plot(trans[50*14:50*(14+1),comp1], trans[50*14:50*(14+1),comp2], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5, label='a-4')
     
     r,g,b = (1,0,1)
-    plt.plot(trans[50*5:50*(5+1),0], trans[50*5:50*(5+1),1], '*', markersize=7, color=(r, g, b, 1), alpha=0.5, label='v-5')
-    plt.plot(trans[50*15:50*(15+1),0], trans[50*15:50*(15+1),1], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5, label='a-5')
+    plt.plot(trans[50*5:50*(5+1),comp1], trans[50*5:50*(5+1),comp2], '*', markersize=7, color=(r, g, b, 1), alpha=0.5, label='v-5')
+    plt.plot(trans[50*15:50*(15+1),comp1], trans[50*15:50*(15+1),comp2], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5, label='a-5')
     
     r,g,b = (1,1,0)
-    plt.plot(trans[50*6:50*(6+1),0], trans[50*6:50*(6+1),1], '*', markersize=7, color=(r, g, b, 1), alpha=0.5, label='v-6')
-    plt.plot(trans[50*16:50*(16+1),0], trans[50*16:50*(16+1),1], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5, label='a-6')
+    plt.plot(trans[50*6:50*(6+1),comp1], trans[50*6:50*(6+1),comp2], '*', markersize=7, color=(r, g, b, 1), alpha=0.5, label='v-6')
+    plt.plot(trans[50*16:50*(16+1),comp1], trans[50*16:50*(16+1),comp2], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5, label='a-6')
     
     r,g,b = (0.5,0,0)
-    plt.plot(trans[50*7:50*(7+1),0], trans[50*7:50*(7+1),1], '*', markersize=7, color=(r, g, b, 1), alpha=0.5, label='v-7')
-    plt.plot(trans[50*17:50*(17+1),0], trans[50*17:50*(17+1),1], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5, label='a-7')
+    plt.plot(trans[50*7:50*(7+1),comp1], trans[50*7:50*(7+1),comp2], '*', markersize=7, color=(r, g, b, 1), alpha=0.5, label='v-7')
+    plt.plot(trans[50*17:50*(17+1),comp1], trans[50*17:50*(17+1),comp2], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5, label='a-7')
    
     r,g,b = (0.5,0,1)
-    plt.plot(trans[50*8:50*(8+1),0], trans[50*8:50*(8+1),1], '*', markersize=7, color=(r, g, b, 1), alpha=0.5, label='v-8')
-    plt.plot(trans[50*18:50*(18+1),0], trans[50*18:50*(18+1),1], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5, label='a-8')
+    plt.plot(trans[50*8:50*(8+1),comp1], trans[50*8:50*(8+1),comp2], '*', markersize=7, color=(r, g, b, 1), alpha=0.5, label='v-8')
+    plt.plot(trans[50*18:50*(18+1),comp1], trans[50*18:50*(18+1),comp2], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5, label='a-8')
 
     r,g,b = (0.5,0.5,0.5)
-    plt.plot(trans[50*9:50*(9+1),0], trans[50*9:50*(9+1),1], '*', markersize=7, color=(r, g, b, 1), alpha=0.5, label='v-9')
-    plt.plot(trans[50*19:50*(19+1),0], trans[50*19:50*(19+1),1], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5, label='a-9')
+    plt.plot(trans[50*9:50*(9+1),comp1], trans[50*9:50*(9+1),comp2], '*', markersize=7, color=(r, g, b, 1), alpha=0.5, label='v-9')
+    plt.plot(trans[50*19:50*(19+1),comp1], trans[50*19:50*(19+1),comp2], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5, label='a-9')
     
 
     plt.xlabel('x_values')
@@ -382,4 +384,55 @@ def runPCA(results):
     
     plt.show();
 
+
+
+def mutualInfo(S,R):
+    # assuming the responses are either over the mean value or under.
+    
+    nStim = np.shape(S)[0];
+    nUnitS=np.shape(S)[1];
+    nUnitR=np.shape(R)[1];
+
+    I = np.zeros((nUnitS,nUnitR));
+    
+    ## create bin matrix
+    PsrTable = np.zeros((nUnitS,nUnitR));
+    s_mean = np.mean(S);
+    r_mean = np.mean(R);
+
+    for s in range(nUnitS):
+        for r in range(nUnitR):
+            s_cond = S[:,s]>s_mean;
+            r_cond = R[:,r]>r_mean;
+            Psr=np.zeros((2,2));
+            Ps = np.zeros((2,));
+            Pr = np.zeros((2,));
+            
+            
+            Ps[1] = np.count_nonzero(s_cond);
+            Ps[0] = nStim - Ps[1];
+            Pr[1] = np.count_nonzero(r_cond);
+            Pr[0] = nStim - Pr[1];
+            Psr[1,1]= np.count_nonzero(s_cond&r_cond);
+            Psr[0,1] = Pr[1]-Psr[1,1];
+            Psr[1,0] = Ps[1]-Psr[1,1];
+            Psr[0,0]= nStim-Psr[0,1]-Psr[1,0]-Psr[1,1];
+ 
+            Psr/=nStim;
+            Ps/=nStim;
+            Pr/=nStim;
+            
+            for x in range(2):
+                for y in range(2):
+#                     if (Psr[x,y]-(Ps[x]*Pr[y])<0):
+#                         print("Psr["+str(x)+","+str(y) + "]=" + str(Psr[x,y]))
+#                         print("Ps["+str(x)+"]*Pr["+str(y)+"]="+str(Ps[x])+"*"+str(Pr[y]))
+                    if (Psr[x,y]!=0 and Ps[x]*Pr[y]!=0 and Psr[x,y]-(Ps[x]*Pr[y])>0):
+                        I[s,r]+=Psr[x,y]*np.log2(Psr[x,y]/(Ps[x]*Pr[y]));
+
+    print("** finished calculating mutual cell info ** ");    
+    return I;
+            
+            
+            
     
