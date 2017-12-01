@@ -7,13 +7,17 @@ import plotting
 import analysis
 
 
-## Initialization ##
-
+############################################
 ## import input data and save into a file ##
+############################################
 # importInput.importInput();
 
 
+
+#################
 ## load Inputs ##
+#################
+
 pkl_file = open('data/audioInput.pkl', 'rb')
 data = pickle.load(pkl_file)
 pkl_file.close();
@@ -38,13 +42,15 @@ print("** visual input loaded **")
 
 
 
+#################################################
+## modifying the structure of input to be used ##
+## to avoid the network to learn a particular  ##
+## pair of a visual input and a audio input    ##  
+#################################################
 
-### mod input
 nTestSet = len(xTrainAudio);
 nTrainSet = nTestSet;
 emptyInput = np.zeros((nTrainSet,dim,dim));
-
-
 
 
 # param for training set
@@ -87,11 +93,11 @@ for o in range(nObj):
  
 
 
+#######################################################
+## Creating a combined input to test combinations of ##
+## A and V (V only, A only, and V+A)                 ##
+#######################################################
 
-
-
- 
-#create a combined input to test combinations of A and V (V only, A only, and V+A)
 xTrainVisual_comb = np.zeros((nTrainSet*3,dim,dim));
 xTrainVisual_comb[:nTrainSet] = xTrainVisual
 xTrainVisual_comb[nTrainSet:nTrainSet*2] = emptyInput
@@ -124,7 +130,12 @@ print("** created: xTrainMnist_comb, xTrainAudio_comb, xTestMnist_comb_allon, xT
 
 
 
-## load model ##
+
+
+##########################
+## Setting up the model ##
+##########################
+
 import models
 # model_full, model_partial = models.model1();
 # model_full, model_partial = models.model3_oneInput();
@@ -134,12 +145,14 @@ model_full, model_partial = models.model4_dense();
 model_full.compile(optimizer='adadelta', loss='binary_crossentropy')
 model_partial.compile(optimizer='adadelta', loss='binary_crossentropy')
 # model_full.load_weights('data/171127_autoencoder_oneInput_itr_0.weights');
-untrainedWeights_full = model_full.get_weights();
-untrainedWeights_partial = model_partial.get_weights();
-
 print("** model is loaded and compiled")
 
+
+
+########################
 ## training the model ##
+########################
+
 # model_full.fit([xTrainVisual_comb, xTrainAudio_comb], [xTestVisual_comb_allon, xTestAudio_comb_allon],
 #                 epochs=1000,
 #                 batch_size=10,
@@ -148,24 +161,40 @@ print("** model is loaded and compiled")
 # model_full.save_weights('autoencoder_comb_3000it.h5')
 
 
+
+
+
+############################################
+## Loading the weights from the save file ##
+############################################
+
+# load untrained weights
+model_full.load_weights('data/171128_autoencoder_dense_itr_0.weights');
+# model_full.load_weights('data/171130_model_dense_modTrain_itr_0.weights');
+untrainedWeights_full = model_full.get_weights();
+untrainedWeights_partial = model_partial.get_weights();
+
+
+# load trained weights
 ## loading trained weights from the previously trained model 
 # model_full.load_weights('data/autoencoder_comb_3000it.h5')
 # model_full.load_weights('data/171122_autoencoder_comb_sigmoid.h5')
 # model_full.load_weights('data/171127_autoencoder_oneInput_itr_5000.weights');
-model_full.load_weights('data/171128_autoencoder_dense_itr_0.weights');
+model_full.load_weights('data/171128_autoencoder_dense_itr_10000.weights');
+# model_full.load_weights('data/171130_model_dense_modTrain_itr_14000.weights');
 # model_full.load_weights('data/171128_model_dense_4layers_itr_20000.weights');
-
-
-
-
-print("** weights are set")
 trainedWeights_full = model_full.get_weights();
 trainedWeights_partial=model_partial.get_weights()
 
+print("** weights are set")
 
 
 
-# ## plot results
+
+###############################
+## plot reconstructed images ##
+###############################
+
 # plotting.plotResults(model_full,xTestVisual,emptyInput);
 # plotting.plotResults(model_full,emptyInput,xTestAudio);
 # plotting.plotResults(model_full,xTestVisual,xTestAudio);
@@ -174,6 +203,11 @@ trainedWeights_partial=model_partial.get_weights()
 
 
 
+
+######################################
+## Analysis:                        ##
+## Retrieving the predicted results ##
+######################################
 
 ## analysis over the middle layer
 model_partial.set_weights(untrainedWeights_partial);
@@ -185,69 +219,109 @@ predictedResult_trained = model_partial.predict([xTrainVisual_comb, xTrainAudio_
 
 
 
+
+
+
+#############
+## run PCA ##
+#############
+
+# shape = np.shape(predictedResult_trained);
+# results_forPCA = predictedResult_trained.reshape(shape[0],np.size(predictedResult_trained[0]));
+# analysis.runPCA(results_forPCA);
+
+
+
+
+
+
+
+
+
+#################################
+## Mutual information analysis ##
+#################################
+
 ## calculate mutual info
-shape = np.shape(xTrainVisual_comb);
-inputs_forMutual_V = xTrainVisual_comb.reshape(shape[0],np.size(xTrainVisual_comb[0]));
-inputs_forMutual_A = xTrainAudio_comb.reshape(shape[0],np.size(xTrainAudio_comb[0]));
-
-shape = np.shape(predictedResult_trained);
-results_forMutual_trained = predictedResult_trained.reshape(shape[0],np.size(predictedResult_trained[0]));
-results_forMutual_untrained = predictedResult_untrained.reshape(shape[0],np.size(predictedResult_untrained[0]));
-IV_untrained = analysis.mutualInfo(inputs_forMutual_V,results_forMutual_untrained)
-IA_untrained = analysis.mutualInfo(inputs_forMutual_A,results_forMutual_untrained)
-IV_trained = analysis.mutualInfo(inputs_forMutual_V,results_forMutual_trained)
-IA_trained = analysis.mutualInfo(inputs_forMutual_A,results_forMutual_trained)
-
-
-print("** IV_untrained -- min: " + str(np.min(IV_untrained)) + ", max: " + str(np.max(IV_untrained)) + ", mean: " + str(np.mean(IV_untrained)));
-print("** IA_untrained -- min: " + str(np.min(IA_untrained)) + ", max: " + str(np.max(IA_untrained)) + ", mean: " + str(np.mean(IA_untrained)));
-print("** IV_Trained -- min: " + str(np.min(IV_trained)) + ", max: " + str(np.max(IV_trained)) + ", mean: " + str(np.mean(IV_trained)));
-print("** IA_Trained -- min: " + str(np.min(IA_trained)) + ", max: " + str(np.max(IA_trained)) + ", mean: " + str(np.mean(IA_trained)));
-
-plt.subplot(2,2,1);
-# plt.gray()
-im = plt.imshow(IV_untrained,vmin=0,vmax=1, aspect="auto");
-plt.colorbar(im)
-plt.title("Visual inputs (Untrained)");
-plt.xlabel("Encoded Units");
-plt.ylabel("Input Units")
-plt.subplot(2,2,2);
-im = plt.imshow(IA_untrained,vmin=0,vmax=1, aspect="auto");
-plt.colorbar(im)
-plt.title("Audio inputs (Untrained)");
-plt.xlabel("Encoded Units");
-plt.ylabel("Input Units")
-
-plt.subplot(2,2,3)
-im = plt.imshow(IV_trained,vmin=0,vmax=1, aspect="auto");
-plt.colorbar(im)
-plt.title("Visual inputs (Trained)");
-plt.xlabel("Encoded Units");
-plt.ylabel("Input Units")
-
-plt.subplot(2,2,4);
-im = plt.imshow(IA_trained,vmin=0,vmax=1, aspect="auto");
-plt.colorbar(im)
-plt.title("Audio inputs (Trained)");
-plt.xlabel("Encoded Units");
-plt.ylabel("Input Units")
-plt.show()
+# shape = np.shape(xTrainVisual_comb);
+# inputs_forMutual_V = xTrainVisual_comb.reshape(shape[0],np.size(xTrainVisual_comb[0]));
+# inputs_forMutual_A = xTrainAudio_comb.reshape(shape[0],np.size(xTrainAudio_comb[0]));
+#  
+# shape = np.shape(predictedResult_trained);
+# results_forMutual_trained = predictedResult_trained.reshape(shape[0],np.size(predictedResult_trained[0]));
+# results_forMutual_untrained = predictedResult_untrained.reshape(shape[0],np.size(predictedResult_untrained[0]));
+# IV_untrained = analysis.mutualInfo(inputs_forMutual_V,results_forMutual_untrained)
+# IA_untrained = analysis.mutualInfo(inputs_forMutual_A,results_forMutual_untrained)
+# IV_trained = analysis.mutualInfo(inputs_forMutual_V,results_forMutual_trained)
+# IA_trained = analysis.mutualInfo(inputs_forMutual_A,results_forMutual_trained)
+#  
+#  
+# print("** IV_untrained -- min: " + str(np.min(IV_untrained)) + ", max: " + str(np.max(IV_untrained)) + ", mean: " + str(np.mean(IV_untrained)));
+# print("** IA_untrained -- min: " + str(np.min(IA_untrained)) + ", max: " + str(np.max(IA_untrained)) + ", mean: " + str(np.mean(IA_untrained)));
+# print("** IV_Trained -- min: " + str(np.min(IV_trained)) + ", max: " + str(np.max(IV_trained)) + ", mean: " + str(np.mean(IV_trained)));
+# print("** IA_Trained -- min: " + str(np.min(IA_trained)) + ", max: " + str(np.max(IA_trained)) + ", mean: " + str(np.mean(IA_trained)));
 
 
+## display the info. table  
+# plt.subplot(2,2,1);
+# # plt.gray()
+# im = plt.imshow(IV_untrained,vmin=0,vmax=1, aspect="auto");
+# plt.colorbar(im)
+# plt.title("Visual inputs (Untrained)");
+# plt.xlabel("Encoded Units");
+# plt.ylabel("Input Units")
+# plt.subplot(2,2,2);
+# im = plt.imshow(IA_untrained,vmin=0,vmax=1, aspect="auto");
+# plt.colorbar(im)
+# plt.title("Audio inputs (Untrained)");
+# plt.xlabel("Encoded Units");
+# plt.ylabel("Input Units")
+#  
+# plt.subplot(2,2,3)
+# im = plt.imshow(IV_trained,vmin=0,vmax=1, aspect="auto");
+# plt.colorbar(im)
+# plt.title("Visual inputs (Trained)");
+# plt.xlabel("Encoded Units");
+# plt.ylabel("Input Units")
+#  
+# plt.subplot(2,2,4);
+# im = plt.imshow(IA_trained,vmin=0,vmax=1, aspect="auto");
+# plt.colorbar(im)
+# plt.title("Audio inputs (Trained)");
+# plt.xlabel("Encoded Units");
+# plt.ylabel("Input Units")
+# plt.show()
 
-# run PCA
-shape = np.shape(predictedResult_trained);
-results_forPCA = predictedResult_trained.reshape(shape[0],np.size(predictedResult_trained[0]));
-analysis.runPCA(results_forPCA);
+## plot the info
+# plt.subplot(2,1,1);
+# plt.plot(-np.sort(-IV_trained.flatten()),label="IV_trained");
+# plt.plot(-np.sort(-IV_untrained.flatten()),label="IV_untrained");
+# plt.title("Visual Input Unit x Encoded Unit")
+# plt.xlabel("s-r pair rank");
+# plt.ylabel("Mutual Information [bit]")
+# plt.ylim((-0.1,1.1));
+# plt.legend();
+# 
+# plt.subplot(2,1,2);
+# plt.plot(-np.sort(-IA_trained.flatten()),label="IA_trained");
+# plt.plot(-np.sort(-IA_untrained.flatten()),label="IA_untrained");
+# plt.title("Audio Input Unit x Encoded Unit")
+# plt.xlabel("s-r pair rank");
+# plt.ylabel("Mutual Information [bit]")
+# plt.ylim((-0.1,1.1));
+# plt.legend();
+# plt.show()
 
 
 
 
 
 
+######################################
+## Single cell information analysis ##
+######################################
 
-
-# info analysis for all V only, A only, V+A
+## 1. info analysis for all V only, A only, V+A
 nObj = 10;
 nTrans = 50*3;
 nRow = np.shape(predictedResult_untrained)[1];
@@ -273,40 +347,18 @@ for s in range(nObj):
 IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=False,nBins=3)
 # IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True,thresholdMode=True)
 # IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis_avg(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True)
-plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_weighted_list[1],results=results_reshaped_for_analysis_trained);
+# plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_weighted_list[1],results=results_reshaped_for_analysis_trained);
 
 
 results_all_trained = results_reshaped_for_analysis_trained;
 
- 
-# # info analysis for all V only and A only
-# nObj = 10;
-# nTrans = 50*2;
-# nRow = np.shape(predictedResult_untrained)[1];
-# nCol = np.shape(predictedResult_untrained)[2];
-# nDep = np.shape(predictedResult_untrained)[3];
-#   
-# results_reshaped_for_analysis_untrained = np.zeros((nObj,nTrans,nRow,nCol,nDep))
-# results_reshaped_for_analysis_trained = np.zeros((nObj,nTrans,nRow,nCol,nDep))
-# for s in range(nObj):
-#     results_reshaped_for_analysis_untrained[s,:50] = predictedResult_untrained[s*50:(s+1)*50]
-#     results_reshaped_for_analysis_untrained[s,50:100] = predictedResult_untrained[500+s*50:500+(s+1)*50]
-#      
-#     results_reshaped_for_analysis_trained[s,:50] = predictedResult_trained[s*50:(s+1)*50]
-#     results_reshaped_for_analysis_trained[s,50:100] = predictedResult_trained[500+s*50:500+(s+1)*50]
-     
-# IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True,nBins=3)
-# IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True,thresholdMode=True,threshold=0.6)
-# IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis_avg(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True)
-# plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_weighted_list[1],results=results_reshaped_for_analysis_trained,title="V and A");
-# plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_list[1],results=results_reshaped_for_analysis_trained,title="V and A");
 
 
 
 
 
+## 2. info analysis based on Visual Inputs
 
-### info analysis (video only)
 # reshape result to easily use single cell info analysis
 nObj = 10;
 nTrans = 50;
@@ -323,21 +375,17 @@ for s in range(nObj):
     results_reshaped_for_analysis_trained[s,:50] = predictedResult_trained[s*50:(s+1)*50]
     
 
-IRs_list_VOnly, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=False,nBins=3)
+IRs_list_VOnly, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True,nBins=3)
 # IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True,thresholdMode=True)
 # IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis_avg(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True)
+
 # plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_weighted_list[1],results=results_reshaped_for_analysis_trained,title="V Only");
 # plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_weighted_list[1],results=results_all_trained,title="based on info about V");
 
 
 
 
-
-
-
-
-
-### info analysis (Audio only)
+## 3. info analysis based on Audio Inputs
 # reshape result to easily use single cell info analysis
 nObj = 10;
 nTrans = 50;
@@ -354,12 +402,15 @@ for s in range(nObj):
     results_reshaped_for_analysis_trained[s,:50] = predictedResult_trained[500+s*50:500+(s+1)*50]
     
 
-IRs_list_AOnly, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=False,nBins=3)
+IRs_list_AOnly, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True,nBins=3)
 # IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True,thresholdMode=True)
 # IRs_list, IRs_weighted_list_avg = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True)
+
 # plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_weighted_list[1],results=results_reshaped_for_analysis_trained, title="A Only");
 # plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_weighted_list[1],results=results_all_trained,title="based on info about A");
 
+
+## 4. show the stat of the single cell info analysis ##
 
 analysis.countCellsWithSelectivity(IRs_list_VOnly,IRs_list_AOnly,results_all_trained,plotOn=False);
 

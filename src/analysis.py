@@ -1,5 +1,6 @@
 from params import *
 from sklearn.decomposition import PCA
+from blaze.expr.expressions import label
 
 # from statsmodels.graphics.tukeyplot import results
 def singleCellInfoAnalysis(results_untrained,results_trained,plotOn=True,thresholdMode = False, nBins=3,threshold = 0.7):
@@ -76,6 +77,10 @@ def singleCellInfoAnalysis(results_untrained,results_trained,plotOn=True,thresho
         IRs_sorted_list.append(IRs_sorted);
     
     if plotOn:
+        labelList = [];
+        for o in range(nObj):
+            labelList.append(str(o));
+                
         plt.subplots_adjust(wspace=0.4, hspace=1.5)
         plt.subplot(3,1,1)
         plt.plot(np.transpose(IRs_sorted_list[0]));
@@ -83,14 +88,17 @@ def singleCellInfoAnalysis(results_untrained,results_trained,plotOn=True,thresho
         plt.xlabel("cell rank")
         plt.title("untrained network")
         plt.ylim((np.log2(nObj)*-0.05,np.log2(nObj)*1.05))
+        plt.legend(labelList)
+        
         plt.subplot(3,1,2)
         plt.plot(np.transpose(IRs_sorted_list[1])); 
         plt.ylabel("single cell info [bit]")
         plt.xlabel("cell rank")
         plt.title("trained network")
         plt.ylim((np.log2(nObj)*-0.05,np.log2(nObj)*1.05))
+        plt.legend(labelList)
         plt.subplot(3,1,3)   
-        plt.plot(np.transpose([np.sort(np.mean(IRs_flattened_list[0],axis=0)*-1)*-1,np.sort(np.mean(IRs_flattened_list[1],axis=0)*-1)*-1]))
+        plt.plot(np.transpose([np.sort(np.mean(IRs_flattened_list[0],axis=0)*-1)*-1,np.sort(np.max(IRs_flattened_list[1],axis=0)*-1)*-1]));
         plt.ylabel("single cell info [bit]")
         plt.xlabel("cell rank")
         plt.title("untrained v trained network (max vals are taken)")
@@ -429,6 +437,7 @@ def mutualInfo(S,R):
 #                         print("Ps["+str(x)+"]*Pr["+str(y)+"]="+str(Ps[x])+"*"+str(Pr[y]))
                     if (Psr[x,y]!=0 and Ps[x]*Pr[y]!=0 and Psr[x,y]-(Ps[x]*Pr[y])>0):
                         I[s,r]+=Psr[x,y]*np.log2(Psr[x,y]/(Ps[x]*Pr[y]));
+
 
     print("** finished calculating mutual cell info ** ");    
     return I;
