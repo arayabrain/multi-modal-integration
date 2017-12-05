@@ -98,7 +98,7 @@ def singleCellInfoAnalysis(results_untrained,results_trained,plotOn=True,thresho
         plt.ylim((np.log2(nObj)*-0.05,np.log2(nObj)*1.05))
         plt.legend(labelList)
         plt.subplot(3,1,3)   
-        plt.plot(np.transpose([np.sort(np.mean(IRs_flattened_list[0],axis=0)*-1)*-1,np.sort(np.max(IRs_flattened_list[1],axis=0)*-1)*-1]));
+        plt.plot(np.transpose([np.sort(np.max(IRs_flattened_list[0],axis=0)*-1)*-1,np.sort(np.max(IRs_flattened_list[1],axis=0)*-1)*-1]));
         plt.ylabel("single cell info [bit]")
         plt.xlabel("cell rank")
         plt.title("untrained v trained network (max vals are taken)")
@@ -391,6 +391,126 @@ def runPCA(results):
     plt.title('Transformed samples with class labels from matplotlib.mlab.PCA()')
     
     plt.show();
+    
+    
+    
+    
+    
+def runPCAAboutUnits(results_untrained,results_trained,infV,infA):
+    infoThreshold = 1.0;
+    N = 3
+    nObj = 10;
+    nTrans = 50;
+    comp1=0;
+    comp2=1;
+    
+    shape = np.shape(infV);
+    
+    
+    pca = PCA(n_components=N)
+    trans_untrained = pca.fit_transform(results_untrained)
+    trans_trained = pca.fit_transform(results_trained)
+
+    
+    infV_max_untrained = np.reshape(np.max(infV[0],axis=0),(shape[2],));
+    infA_max_untrained = np.reshape(np.max(infA[0],axis=0),(shape[2],));
+    infV_max_untrained/=np.log2(10);
+    infA_max_untrained/=np.log2(10);
+    
+    infV_max_trained = np.reshape(np.max(infV[1],axis=0),(shape[2],));
+    infA_max_trained = np.reshape(np.max(infA[1],axis=0),(shape[2],));
+    infV_max_trained/=np.log2(10);
+    infA_max_trained/=np.log2(10);
+
+
+    
+    plt.subplot(1,2,1);
+    for c in range(shape[2]):
+#         r,g,b = (1 if infV_max[c]>infoThreshold else 0,1 if infA_max[c]>infoThreshold else 0,0)
+        r = infV_max_untrained[c];
+        g = infA_max_untrained[c];
+        b = 0;
+                
+        plt.plot(trans_untrained[c,comp1],trans_untrained[c,comp2], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5)
+
+    plt.xlabel('Component '+str(comp1))
+    plt.ylabel('Component '+str(comp2))
+    plt.title('Untrained Network')
+
+
+    plt.subplot(1,2,2);
+    for c in range(shape[2]):
+#         r,g,b = (1 if infV_max[c]>infoThreshold else 0,1 if infA_max[c]>infoThreshold else 0,0)
+        r = infV_max_trained[c];
+        g = infA_max_trained[c];
+        b = 0;
+        
+        plt.plot(trans_trained[c,comp1],trans_trained[c,comp2], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5)
+
+        
+ 
+        
+    plt.xlabel('Component '+str(comp1))
+    plt.ylabel('Component '+str(comp2))
+    plt.legend()
+    plt.title('Trained Network: R:V, G:A, Y:V+A')
+    
+    plt.show();
+    
+
+    
+#     N = 3
+#     nObj= 10;
+#     nTrans = 50;
+#     pca = PCA(n_components=N)
+# #     trans = pca.fit(results)
+#     nCombVar = 3;
+# 
+#     shape = np.shape(results);
+#     
+#     nCells = shape[0] 
+# 
+# #     resultRev= np.zeros((nCells*3,nObj*nTrans));
+# #     for v in range(nCombVar):
+# #         resultRev[(v*nCells):(v+1)*nCells]=results[:,v*nObj*nTrans:(v+1)*nObj*nTrans]
+#     
+# 
+#     trans = pca.fit_transform(result)
+#     comp1=0;
+#     comp2=1;
+#     
+#     infV_max = np.reshape(np.max(infV[1],axis=0),(shape[2],));
+#     infA_max = np.reshape(np.max(infA[1],axis=0),(shape[2],));
+#  
+#      
+# 
+#     r,g,b = (1,0,0)
+#     plt.plot(trans[0*(nCells):(0+1)*(nCells),comp1],trans[0*(nCells):(0+1)*(nCells),comp2], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5)
+#         
+#     r,g,b = (0,1,0)
+#     plt.plot(trans[1*(nCells):(1+1)*(nCells),comp1],trans[1*(nCells):(1+1)*(nCells),comp2], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5)
+# 
+#     r,g,b = (1,1,0)
+#     plt.plot(trans[2*(nCells):(2+1)*(nCells),comp1],trans[2*(nCells):(2+1)*(nCells),comp2], 'o', markersize=7, color=(r, g, b, 1), alpha=0.5)
+# 
+#     plt.xlabel('Component '+str(comp1))
+#     plt.ylabel('Component '+str(comp2))
+# #     plt.xlim([-4,4])
+# #     plt.ylim([-4,4])
+#     plt.legend()
+#     plt.title('Transformed samples with class labels from matplotlib.mlab.PCA()')
+#     
+#     plt.show();
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 
 

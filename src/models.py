@@ -304,3 +304,43 @@ def model6_dense_4layers():
     
     return (autoencoder_comb, partialNetwork);
    
+def model7_dense_1layer():
+    ## IMAGE
+
+    layerDim = 124;
+    
+    inputs_V = Input(shape=(dim,dim,))
+    inputs_V_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_V);
+    
+    inputs_A = Input(shape=(dim,dim,))
+    inputs_A_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_A);
+    
+    
+    x1 = concatenate([inputs_V_reshaped, inputs_A_reshaped]);
+    encoded = Dense(layerDim, activation='sigmoid')(x1);
+    
+    
+    x1 = Dense(layerDim, activation='sigmoid')(encoded)
+    x1 = Dense(layerDim, activation='sigmoid')(x1)
+    x1 = Dense(dim*dim, activation='sigmoid')(x1)
+    decoded_1 =  Reshape((dim,dim), input_shape=(dim*dim,1))(x1);
+    
+    x2 = Dense(layerDim, activation='sigmoid')(encoded)
+    x2 = Dense(layerDim, activation='sigmoid')(x2)
+    x2 = Dense(dim*dim, activation='sigmoid')(x2)
+    decoded_2 = Reshape((dim,dim), input_shape=(dim*dim,1))(x2);
+    
+    
+    autoencoder_comb = Model([inputs_V,inputs_A], [decoded_1,decoded_2])    
+    plot_model(autoencoder_comb, show_shapes=True, to_file='171204_model_dense_1layer.png')
+    
+    
+#     partialNetwork = Model([inputs_V,inputs_A],l1);
+#     partialNetwork = Model([inputs_V,inputs_A],l2);
+#     partialNetwork = Model([inputs_V,inputs_A],l3);
+    partialNetwork = Model([inputs_V,inputs_A],encoded);
+    
+    print("** model constructed **")
+    
+    return (autoencoder_comb, partialNetwork);
+   
