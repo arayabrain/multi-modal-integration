@@ -343,4 +343,36 @@ def model7_dense_1layer():
     print("** model constructed **")
     
     return (autoencoder_comb, partialNetwork);
+
+def model8_revisedInput():
+    layerDim = 124;
+
+    inputs_V = Input(shape=(dim,dim,))
+    inputs_V_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_V);
+    inputs_A = Input(shape=(int(dim/2),dim*2,))
+    inputs_A_reshaped = Reshape((dim*dim,), input_shape=(int(dim/2), dim*2))(inputs_A);
+    
+    
+    x1 = concatenate([inputs_V_reshaped, inputs_A_reshaped]);
+    encoded = Dense(layerDim, activation='sigmoid')(x1);
+    # l2 = Dense(layerDim, activation='sigmoid')(l1)
+    # encoded = Dense(layerDim, activation='sigmoid')(l2)
+    
+    
+    # x1 = Dense(layerDim, activation='sigmoid')(encoded)
+    # x1 = Dense(layerDim, activation='sigmoid')(x1)
+    x1 = Dense(dim*dim, activation='sigmoid')(encoded)
+    decoded_1 =  Reshape((dim,dim), input_shape=(dim*dim,1))(x1);
+    
+    # x2 = Dense(layerDim, activation='sigmoid')(encoded)
+    # x2 = Dense(layerDim, activation='sigmoid')(x2)
+    x2 = Dense(dim*dim, activation='sigmoid')(encoded)
+    decoded_2 = Reshape((int(dim/2),dim*2), input_shape=(dim*dim,1))(x2);
+    
+    
+    model_full = Model([inputs_V,inputs_A], [decoded_1,decoded_2])
+    model_partial = Model([inputs_V,inputs_A], encoded)
+    
+    return (model_full, model_partial);
+    
    

@@ -9,11 +9,11 @@ def plotResults(model,input1,input2):
         plt.imshow(input1[i*50])
         plt.title(i)
         plt.subplot(4,10,10+i+1)
-        plt.imshow(input2[i*50])
+        plt.imshow(input2[i*50],aspect='auto')
         plt.subplot(4,10,20+i+1)
         plt.imshow(decoded_imgs[0][i*50])
         plt.subplot(4,10,30+i+1)
-        plt.imshow(decoded_imgs[1][i*50])
+        plt.imshow(decoded_imgs[1][i*50],aspect='auto')
     plt.show()
     
 def plotActivityOfCellsWithMaxInfo(IRs,results, title="Firing Properties of the cells with the highest single cell information"):
