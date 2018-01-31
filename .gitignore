@@ -5,3 +5,6 @@
 *.ipynb
 *.weights
 *.h5
+*.xml
+*.jpg
+data/wikipedia_info/*
