@@ -143,14 +143,14 @@ print("** created: xTrainMnist_comb, xTrainAudio_comb, xTestMnist_comb_allon, xT
 ##########################
 
 import models
-# model_full, model_partial = models.model1();
-# model_full, model_partial = models.model3_oneInput();
-# model_full, model_partial = models.model4_dense();
-# model_full, model_partial = models.model6_dense_4layers();
-# model_full, model_partial = models.model7_dense_1layer();
-model_full, model_partial = models.model8_revisedInput_4layer_reluDecoder_64();
-# model_full, model_partial = models.model8_revisedInput_1layer_reluDecoder_64()#multi-layer decoder
-# model_full, model_partial = models.model8_revisedInput_1layer_reluDecoder_64_decoderMod();#1layer decoder
+outputLayerOfPartialNet = 4;
+# model_full, model_partial = models.model8_revisedInput_4layer_reluDecoder_64(outputLayerOfPartialNet=outputLayerOfPartialNet);
+# model_full, model_partial = models.model8_revisedInput_3layer_reluDecoder_64();
+# model_full, model_partial = models.model8_revisedInput_2layer_reluDecoder_64();
+# model_full, model_partial = models.model8_revisedInput_1layer_reluDecoder_64();
+
+model_full, model_partial = models.model9_separateInputs_3layer_reluDecoder_64();
+
 
 model_full.compile(optimizer='adadelta', loss='binary_crossentropy')
 model_partial.compile(optimizer='adadelta', loss='binary_crossentropy')
@@ -206,20 +206,41 @@ print("** model is loaded and compiled")
 ############################################
  
 # load untrained weights
-model_full.load_weights('../data/171221_revisedStimuli_4layers_64_inconsistant_itr_0.weights');
+# model_full.load_weights('../data/171221_revisedStimuli_4layers_64_inconsistant_itr_0.weights');
 # model_full.load_weights('../data/171221_revisedStimuli_4layers_64_consistant_itr_0.weights');
-# model_full.load_weights('../data/171228_revisedStimuli_1layer_64_consistant_itr_0.weights');#multi-layer decoder
-# model_full.load_weights('../data/170122_revisedStimuli_1layer_64_consistant_itr_0.weights');#1 layer decoder
+# model_full.load_weights('../data/180122_revisedStimuli_3layer_64_consistant_itr_0.weights');
+# model_full.load_weights('../data/180122_revisedStimuli_2layer_64_consistant_itr_0.weights');
+# model_full.load_weights('../data/180122_revisedStimuli_1layer_64_consistant_itr_0.weights');
+
+
+# model_full.load_weights('../data/189216_revisedStimuli_1layer_64_inconsistant_itr_0.weights');
+# model_full.load_weights('../data/180216_revisedStimuli_2layer_64_inconsistant_itr_0.weights');
+# model_full.load_weights('../data/180216_revisedStimuli_3layer_64_inconsistant_itr_0.weights');
+
+model_full.load_weights('../data/180209_revisedStimuli_4layers_64_consistant_Ngver_itr_0.weights');
+
+
+
 untrainedWeights_full = model_full.get_weights();
 untrainedWeights_partial = model_partial.get_weights();
  
  
 # load trained weights
 ## loading trained weights from the previously trained model 
-model_full.load_weights('../data/171221_revisedStimuli_4layers_64_inconsistant_itr_5000.weights');
+# model_full.load_weights('../data/171221_revisedStimuli_4layers_64_inconsistant_itr_5000.weights');
 # model_full.load_weights('../data/171221_revisedStimuli_4layers_64_consistant_itr_5000.weights');
-# model_full.load_weights('../data/171228_revisedStimuli_1layer_64_consistant_itr_5000.weights');#multi-layer decoder
-# model_full.load_weights('../data/170122_revisedStimuli_1layer_64_consistant_itr_5000.weights');#1 layer decoder
+# model_full.load_weights('../data/180122_revisedStimuli_3layer_64_consistant_itr_5000.weights');
+# model_full.load_weights('../data/180122_revisedStimuli_2layer_64_consistant_itr_5000.weights');
+# model_full.load_weights('../data/180122_revisedStimuli_1layer_64_consistant_itr_5000.weights');
+
+
+# model_full.load_weights('../data/189216_revisedStimuli_1layer_64_inconsistant_itr_5000.weights');
+# model_full.load_weights('../data/180216_revisedStimuli_2layer_64_inconsistant_itr_5000.weights');
+# model_full.load_weights('../data/180216_revisedStimuli_3layer_64_inconsistant_itr_5000.weights');
+
+model_full.load_weights('../data/180209_revisedStimuli_4layers_64_consistant_Ngver_itr_5000.weights');
+
+
 trainedWeights_full = model_full.get_weights();
 trainedWeights_partial=model_partial.get_weights()
  
@@ -313,10 +334,12 @@ predictedResult_crossRep_test_A = model_partial.predict([emptyInput_visual_test,
 
 
 
-# experimentName = '180123_crossRepLearning_consit_A2V_1layer_supervised1layer';
-# experimentName = '180123_crossRepLearning_consit_A2V_4layer_supervised1layer';
-experimentName = '180125_crossRepLearning_consit_A2V_4layer_supervised3ayer_encodedInput';
+# experimentName = '180125_crossRepLearning_consit_A2V_4layer_supervised3ayer_encodedInput';
 # experimentName = '180123_crossRepLearning_consit_V2A_4layer_supervised1layer_encodedInput';
+
+# experimentName = '180216_crossRepLearning_consit_A2V_4layers_supervised3ayer_encodedInput';
+experimentName = '180220_crossRepLearning_consit_V2A_3layer_supervised3layer_encodedInput_ngver';
+
 
 # model_crossRep = models.sharedRepLearning_decodedInput();
 model_crossRep = models.sharedRepLearning_encodedInput();
@@ -334,23 +357,25 @@ model_crossRep.save_weights('data/'+experimentName+'_itr_0.weights');
 untrainedWeights_crossRep = model_crossRep.get_weights();
  
 maxItr = 1000;
+
+
 # #V2A
-# model_crossRep.fit(predictedResult_crossRep_train_V, yTrainVisual_shuffled,
-#                 epochs=maxItr,
-#                 batch_size=256,
-#                 validation_data=(predictedResult_crossRep_test_A, yTestAudio))
-
-
-
-#A2V
-model_crossRep.fit(predictedResult_crossRep_train_A, yTrainAudio_shuffled,
+model_crossRep.fit(predictedResult_crossRep_train_V, yTrainVisual_shuffled,
                 epochs=maxItr,
                 batch_size=256,
-                validation_data=(predictedResult_crossRep_test_V, yTestVisual))
-         
+                validation_data=(predictedResult_crossRep_test_A, yTestAudio))
 
-trainedWeights_crossRep = model_crossRep.get_weights();
-model_crossRep.save_weights('data/'+experimentName+'_itr_'+str(maxItr)+'.weights');
+
+
+# # #A2V
+# model_crossRep.fit(predictedResult_crossRep_train_A, yTrainAudio_shuffled,
+#                 epochs=maxItr,
+#                 batch_size=256,
+#                 validation_data=(predictedResult_crossRep_test_V, yTestVisual))
+#          
+# 
+# trainedWeights_crossRep = model_crossRep.get_weights();
+# model_crossRep.save_weights('data/'+experimentName+'_itr_'+str(maxItr)+'.weights');
 
 
 

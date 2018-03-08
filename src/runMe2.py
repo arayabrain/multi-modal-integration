@@ -225,6 +225,25 @@ predictedResult = pca.transform(xTrain_comb)
 print(predictedResult.shape)
 
 
+
+
+# #############
+# ## run PCA ##
+# #############
+# 
+# shape = np.shape(predictedResult);
+# results_forPCA_trained = predictedResult.reshape(shape[0],np.size(predictedResult[0]));
+# results_forPCA_untrained = predictedResult.reshape(shape[0],np.size(predictedResult[0]));
+# 
+# ## 1. PCA over stimulus category
+# analysis.runPCA(results_forPCA_untrained);
+# analysis.runPCA(results_forPCA_trained);
+
+
+
+
+
+
 #s t row col dep
 nCombPattern = 3;
 nTrans = 50;

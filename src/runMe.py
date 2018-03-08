@@ -118,15 +118,21 @@ print("** created: xTrainMnist_comb, xTrainAudio_comb, xTestMnist_comb_allon, xT
 ##########################
 
 import models
+
+## original 4 layer network
 outputLayerOfPartialNet = 4;
-# model_full, model_partial = models.model1();
-# model_full, model_partial = models.model3_oneInput();
-# model_full, model_partial = models.model4_dense();
-# model_full, model_partial = models.model6_dense_4layers();
-# model_full, model_partial = models.model7_dense_1layer();
 model_full, model_partial = models.model8_revisedInput_4layer_reluDecoder_64(outputLayerOfPartialNet=outputLayerOfPartialNet);
+
+## different number of layers
+# model_full, model_partial = models.model8_revisedInput_3layer_reluDecoder_64();
+# model_full, model_partial = models.model8_revisedInput_2layer_reluDecoder_64();
 # model_full, model_partial = models.model8_revisedInput_1layer_reluDecoder_64();
-# model_full, model_partial = models.model8_revisedInput_1layer_reluDecoder_64_decoderMod();
+
+## two-stage framework
+# model_full, model_partial = models.model9_separateInputs_3layer_reluDecoder_64();
+
+# plot_model(model_full, show_shapes=True, to_file='check.png')
+
 
 model_full.compile(optimizer='adadelta', loss='binary_crossentropy')
 model_partial.compile(optimizer='adadelta', loss='binary_crossentropy')
@@ -182,26 +188,49 @@ print("** model is loaded and compiled")
 ############################################
  
 # load untrained weights
-# model_full.load_weights('data/171128_autoencoder_dense_itr_0.weights');
+## original 4 layered network
 model_full.load_weights('../data/171221_revisedStimuli_4layers_64_consistant_itr_0.weights');
-# model_full.load_weights('../data/171228_revisedStimuli_1layer_64_consistant_itr_0.weights');
-# model_full.load_weights('../data/170122_revisedStimuli_1layer_64_consistant_itr_0.weights');
-# model_full.load_weights('data/171130_model_dense_modTrain_itr_0.weights');
+# model_full.load_weights('../data/171221_revisedStimuli_4layers_64_inconsistant_itr_0.weights');
+# model_full.load_weights('../data/171221_revisedStimuli_4layers_64_inconsistant_itr_5000.weights');
+
+## two-stage framework (consistent)
+# model_full.load_weights('../data/180209_revisedStimuli_4layers_64_consistant_Ngver_itr_0.weights');
+
+## different number of layers (consistent)
+# model_full.load_weights('../data/180122_revisedStimuli_1layer_64_consistant_itr_0.weights');
+# model_full.load_weights('../data/180122_revisedStimuli_2layer_64_consistant_itr_0.weights');
+# model_full.load_weights('../data/180122_revisedStimuli_3layer_64_consistant_itr_0.weights');
+
+## different number of layers (inconsistent)
+# model_full.load_weights('../data/189216_revisedStimuli_1layer_64_inconsistant_itr_0.weights');
+# model_full.load_weights('../data/180216_revisedStimuli_2layer_64_inconsistant_itr_0.weights');
+# model_full.load_weights('../data/180216_revisedStimuli_3layer_64_inconsistant_itr_0.weights');
+
+
 untrainedWeights_full = model_full.get_weights();
 untrainedWeights_partial = model_partial.get_weights();
  
  
 # load trained weights
 ## loading trained weights from the previously trained model 
-# model_full.load_weights('data/autoencoder_comb_3000it.h5')
-# model_full.load_weights('data/171122_autoencoder_comb_sigmoid.h5')
-# model_full.load_weights('data/171127_autoencoder_oneInput_itr_5000.weights');
-# model_full.load_weights('data/171128_autoencoder_dense_itr_10000.weights');
+
+## original 4 layered network
 model_full.load_weights('../data/171221_revisedStimuli_4layers_64_consistant_itr_5000.weights');
-# model_full.load_weights('../data/170122_revisedStimuli_1layer_64_consistant_itr_5000.weights');
-# model_full.load_weights('../data/171228_revisedStimuli_1layer_64_consistant_itr_5000.weights');
-# model_full.load_weights('data/171130_model_dense_modTrain_itr_14000.weights');
-# model_full.load_weights('data/171128_model_dense_4layers_itr_20000.weights');
+# model_full.load_weights('../data/171221_revisedStimuli_4layers_64_inconsistant_itr_5000.weights');
+
+## two stage framework
+# model_full.load_weights('../data/180209_revisedStimuli_4layers_64_consistant_Ngver_itr_5000.weights');
+
+## different number of layers (consistent)
+# model_full.load_weights('../data/180122_revisedStimuli_1layer_64_consistant_itr_5000.weights');
+# model_full.load_weights('../data/180122_revisedStimuli_2layer_64_consistant_itr_5000.weights');
+# model_full.load_weights('../data/180122_revisedStimuli_3layer_64_consistant_itr_5000.weights');
+
+## different number of layers (inconsistent)
+# model_full.load_weights('../data/189216_revisedStimuli_1layer_64_inconsistant_itr_5000.weights');
+# model_full.load_weights('../data/180216_revisedStimuli_2layer_64_inconsistant_itr_5000.weights');
+# model_full.load_weights('../data/180216_revisedStimuli_3layer_64_inconsistant_itr_5000.weights');
+
 trainedWeights_full = model_full.get_weights();
 trainedWeights_partial=model_partial.get_weights()
  
@@ -256,105 +285,112 @@ predictedResult_trained = model_partial.predict([xTestVisual_comb, xTestAudio_co
 # plt.show()
  
 
+ ###############################
+ ## Persistant Homology
+ ###############################
+ 
+# analysis.persistentHomology(trainedWeights_full[0]);
  
  
- #################################
- ## Mutual information analysis ##
- #################################
-    
-# # calculate mutual info
-shape = np.shape(xTestVisual);
-inputs_forMutual_V = xTestVisual.reshape(shape[0],np.size(xTestVisual[0]));
-inputs_forMutual_A = xTestAudio.reshape(shape[0],np.size(xTestAudio[0]));
-            
-# shape = np.shape(predictedResult_trained[1000:]);
-       
-results_forMutual_V_trained = predictedResult_trained[:500].reshape(500,np.size(predictedResult_trained[0]));
-results_forMutual_V_untrained = predictedResult_untrained[:500].reshape(500,np.size(predictedResult_untrained[0]));
-       
-results_forMutual_A_trained = predictedResult_trained[500:1000].reshape(500,np.size(predictedResult_trained[0]));
-results_forMutual_A_untrained = predictedResult_untrained[500:1000].reshape(500,np.size(predictedResult_untrained[0]));
-    
-nBins = 20;
-#  
-# IV_untrained = analysis.mutualInfo(inputs_forMutual_V,results_forMutual_V_untrained,nBins=nBins)
-# IA_untrained = analysis.mutualInfo(inputs_forMutual_A,results_forMutual_A_untrained,nBins=nBins)
-#       
-# IV_trained = analysis.mutualInfo(inputs_forMutual_V,results_forMutual_V_trained,nBins=nBins)
-# IA_trained = analysis.mutualInfo(inputs_forMutual_A,results_forMutual_A_trained,nBins=nBins)
-#           
+ 
+ 
+#  #################################
+#  ## Mutual information analysis ##
+#  #################################
 #     
+# # # calculate mutual info
+# shape = np.shape(xTestVisual);
+# inputs_forMutual_V = xTestVisual.reshape(shape[0],np.size(xTestVisual[0]));
+# inputs_forMutual_A = xTestAudio.reshape(shape[0],np.size(xTestAudio[0]));
+#             
+# # shape = np.shape(predictedResult_trained[1000:]);
+#        
+# results_forMutual_V_trained = predictedResult_trained[:500].reshape(500,np.size(predictedResult_trained[0]));
+# results_forMutual_V_untrained = predictedResult_untrained[:500].reshape(500,np.size(predictedResult_untrained[0]));
+#        
+# results_forMutual_A_trained = predictedResult_trained[500:1000].reshape(500,np.size(predictedResult_trained[0]));
+# results_forMutual_A_untrained = predictedResult_untrained[500:1000].reshape(500,np.size(predictedResult_untrained[0]));
+#     
+# nBins = 20;
+# #  
+# # IV_untrained = analysis.mutualInfo(inputs_forMutual_V,results_forMutual_V_untrained,nBins=nBins)
+# # IA_untrained = analysis.mutualInfo(inputs_forMutual_A,results_forMutual_A_untrained,nBins=nBins)
+# #       
+# # IV_trained = analysis.mutualInfo(inputs_forMutual_V,results_forMutual_V_trained,nBins=nBins)
+# # IA_trained = analysis.mutualInfo(inputs_forMutual_A,results_forMutual_A_trained,nBins=nBins)
+# #           
+# #     
+# # mutualInfoToSave = []
+# # mutualInfoToSave.append(IV_untrained);
+# # mutualInfoToSave.append(IA_untrained);
+# # mutualInfoToSave.append(IV_trained);
+# # mutualInfoToSave.append(IA_trained);
+# #      
+# #      
+# # pkl_file = open('data/mutualInfo_bin20_l'+str(outputLayerOfPartialNet)+'.pkl', 'wb')
+# # pickle.dump(mutualInfoToSave, pkl_file)
+# # pkl_file.close();
+# # print("** mutual info exported **")
+#  
+#  
+#  
+#  
+# ## shuffling the input pattern
+# inputs_forMutual_V_shuffled = np.copy(inputs_forMutual_V);
+# inputs_forMutual_A_shuffled = np.copy(inputs_forMutual_A);
+#  
+# nInputs = np.shape(inputs_forMutual_V)[0];
+# inputSize = np.shape(inputs_forMutual_V)[1];
+#  
+# for index,index_shuffled in zip(range(nInputs*inputSize),np.random.permutation(nInputs*inputSize)):
+#     obj = index%nInputs;
+#     pixel = int(np.floor(index/nInputs));
+# #     print(str(obj),str(pixel))
+#     pixel_shuffled = int(np.floor(index_shuffled/nInputs));
+#     obj_shuffled = index_shuffled%nInputs;
+#     inputs_forMutual_V_shuffled[obj,pixel] = inputs_forMutual_V[obj_shuffled,pixel_shuffled];
+#     inputs_forMutual_A_shuffled[obj,pixel] = inputs_forMutual_A[obj_shuffled,pixel_shuffled];
+#  
+# IV_shuffled = analysis.mutualInfo(inputs_forMutual_V_shuffled,results_forMutual_V_trained,nBins=nBins)
+# IA_shuffled = analysis.mutualInfo(inputs_forMutual_A_shuffled,results_forMutual_A_trained,nBins=nBins)
+# 
+# 
+# # ## shuffling the output patterns
+# # results_forMutual_V_trained_shuffled = np.copy(results_forMutual_V_trained);
+# # results_forMutual_A_trained_shuffled = np.copy(results_forMutual_A_trained);
+# # 
+# # nStims = np.shape(results_forMutual_V_trained)[0];
+# # layerDim = np.shape(results_forMutual_V_trained)[1];
+# # 
+# # for index,index_shuffled in zip(range(nStims*layerDim),np.random.permutation(nStims*layerDim)):
+# #     obj = index%nStims;
+# #     cellIndex = int(np.floor(index/nStims));
+# # #     print(str(obj),str(pixel))
+# #     cellIndex_shuffled = int(np.floor(index_shuffled/nStims));
+# #     obj_shuffled = index_shuffled%nStims;
+# #     results_forMutual_V_trained_shuffled[obj,cellIndex] = results_forMutual_V_trained[obj_shuffled,cellIndex_shuffled];
+# #     results_forMutual_A_trained_shuffled[obj,cellIndex] = results_forMutual_A_trained[obj_shuffled,cellIndex_shuffled];
+# #  
+# # 
+# # IV_shuffled = analysis.mutualInfo(inputs_forMutual_V,results_forMutual_V_trained_shuffled,nBins=nBins)
+# # IA_shuffled = analysis.mutualInfo(inputs_forMutual_A,results_forMutual_A_trained_shuffled,nBins=nBins)
+# 
+#   
 # mutualInfoToSave = []
-# mutualInfoToSave.append(IV_untrained);
-# mutualInfoToSave.append(IA_untrained);
-# mutualInfoToSave.append(IV_trained);
-# mutualInfoToSave.append(IA_trained);
-#      
-#      
-# pkl_file = open('data/mutualInfo_bin20_l'+str(outputLayerOfPartialNet)+'.pkl', 'wb')
+# mutualInfoToSave.append(IV_shuffled);
+# mutualInfoToSave.append(IA_shuffled);
+# pkl_file = open('data/mutualInfo_bin20_shuffled_l'+str(outputLayerOfPartialNet)+'.pkl', 'wb')
 # pickle.dump(mutualInfoToSave, pkl_file)
 # pkl_file.close();
 # print("** mutual info exported **")
- 
- 
- 
- 
-## shuffling the input pattern
-inputs_forMutual_V_shuffled = np.copy(inputs_forMutual_V);
-inputs_forMutual_A_shuffled = np.copy(inputs_forMutual_A);
- 
-nInputs = np.shape(inputs_forMutual_V)[0];
-inputSize = np.shape(inputs_forMutual_V)[1];
- 
-for index,index_shuffled in zip(range(nInputs*inputSize),np.random.permutation(nInputs*inputSize)):
-    obj = index%nInputs;
-    pixel = int(np.floor(index/nInputs));
-#     print(str(obj),str(pixel))
-    pixel_shuffled = int(np.floor(index_shuffled/nInputs));
-    obj_shuffled = index_shuffled%nInputs;
-    inputs_forMutual_V_shuffled[obj,pixel] = inputs_forMutual_V[obj_shuffled,pixel_shuffled];
-    inputs_forMutual_A_shuffled[obj,pixel] = inputs_forMutual_A[obj_shuffled,pixel_shuffled];
- 
-IV_shuffled = analysis.mutualInfo(inputs_forMutual_V_shuffled,results_forMutual_V_trained,nBins=nBins)
-IA_shuffled = analysis.mutualInfo(inputs_forMutual_A_shuffled,results_forMutual_A_trained,nBins=nBins)
-
-
-# ## shuffling the output patterns
-# results_forMutual_V_trained_shuffled = np.copy(results_forMutual_V_trained);
-# results_forMutual_A_trained_shuffled = np.copy(results_forMutual_A_trained);
 # 
-# nStims = np.shape(results_forMutual_V_trained)[0];
-# layerDim = np.shape(results_forMutual_V_trained)[1];
 # 
-# for index,index_shuffled in zip(range(nStims*layerDim),np.random.permutation(nStims*layerDim)):
-#     obj = index%nStims;
-#     cellIndex = int(np.floor(index/nStims));
-# #     print(str(obj),str(pixel))
-#     cellIndex_shuffled = int(np.floor(index_shuffled/nStims));
-#     obj_shuffled = index_shuffled%nStims;
-#     results_forMutual_V_trained_shuffled[obj,cellIndex] = results_forMutual_V_trained[obj_shuffled,cellIndex_shuffled];
-#     results_forMutual_A_trained_shuffled[obj,cellIndex] = results_forMutual_A_trained[obj_shuffled,cellIndex_shuffled];
-#  
-# 
-# IV_shuffled = analysis.mutualInfo(inputs_forMutual_V,results_forMutual_V_trained_shuffled,nBins=nBins)
-# IA_shuffled = analysis.mutualInfo(inputs_forMutual_A,results_forMutual_A_trained_shuffled,nBins=nBins)
-
-  
-mutualInfoToSave = []
-mutualInfoToSave.append(IV_shuffled);
-mutualInfoToSave.append(IA_shuffled);
-pkl_file = open('data/mutualInfo_bin20_shuffled_l'+str(outputLayerOfPartialNet)+'.pkl', 'wb')
-pickle.dump(mutualInfoToSave, pkl_file)
-pkl_file.close();
-print("** mutual info exported **")
-
-
-# print("** IV_untrained -- sum: " + str(np.sum(IV_untrained)) + ", max: " + str(np.max(IV_untrained)) + ", mean: " + str(np.mean(IV_untrained)));
-# print("** IA_untrained -- sum: " + str(np.sum(IA_untrained)) + ", max: " + str(np.max(IA_untrained)) + ", mean: " + str(np.mean(IA_untrained)));
-# print("** IV_Trained -- sum: " + str(np.sum(IV_trained)) + ", max: " + str(np.max(IV_trained)) + ", mean: " + str(np.mean(IV_trained)));
-# print("** IA_Trained -- sum: " + str(np.sum(IA_trained)) + ", max: " + str(np.max(IA_trained)) + ", mean: " + str(np.mean(IA_trained)));
-print("** IV_Trained_shuffled -- sum: " + str(np.sum(IV_shuffled)) + ", max: " + str(np.max(IV_shuffled)) + ", mean: " + str(np.mean(IV_shuffled)));
-print("** IA_Trained_shuffled -- sum: " + str(np.sum(IA_shuffled)) + ", max: " + str(np.max(IA_shuffled)) + ", mean: " + str(np.mean(IA_shuffled)));
+# # print("** IV_untrained -- sum: " + str(np.sum(IV_untrained)) + ", max: " + str(np.max(IV_untrained)) + ", mean: " + str(np.mean(IV_untrained)));
+# # print("** IA_untrained -- sum: " + str(np.sum(IA_untrained)) + ", max: " + str(np.max(IA_untrained)) + ", mean: " + str(np.mean(IA_untrained)));
+# # print("** IV_Trained -- sum: " + str(np.sum(IV_trained)) + ", max: " + str(np.max(IV_trained)) + ", mean: " + str(np.mean(IV_trained)));
+# # print("** IA_Trained -- sum: " + str(np.sum(IA_trained)) + ", max: " + str(np.max(IA_trained)) + ", mean: " + str(np.mean(IA_trained)));
+# print("** IV_Trained_shuffled -- sum: " + str(np.sum(IV_shuffled)) + ", max: " + str(np.max(IV_shuffled)) + ", mean: " + str(np.mean(IV_shuffled)));
+# print("** IA_Trained_shuffled -- sum: " + str(np.sum(IA_shuffled)) + ", max: " + str(np.max(IA_shuffled)) + ", mean: " + str(np.mean(IA_shuffled)));
 
 
    
@@ -479,56 +515,56 @@ results_all_trained = results_reshaped_for_analysis_trained;
      
 
    
-# ## 2. info analysis based on Visual Inputs
-# nTrans = 50;
-# results_reshaped_for_analysis_untrained = np.zeros((nObj,nTrans,nRow,nCol,nDep))
-# results_reshaped_for_analysis_trained = np.zeros((nObj,nTrans,nRow,nCol,nDep))
-#       
-# for s in range(nObj):
-#     results_reshaped_for_analysis_untrained[s,:50] = predictedResult_untrained[s*50:(s+1)*50]
-#           
-#     results_reshaped_for_analysis_trained[s,:50] = predictedResult_trained[s*50:(s+1)*50]
-#           
-# # IRs_list_VOnly, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=False,nBins=3)
-# IRs_list_VOnly, IRs_weighted_list_VOnly = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=False,nBins=10)
-# # IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True,thresholdMode=True)
-# # IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis_avg(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True)
-#       
-# # plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_weighted_list_VOnly[1],results=results_all_trained,title="based on info about V");
-# # pkl_file = open('data/singleCellInfo_consistent_vs_inconsistent_V-Only_bin10_l'+str(outputLayerOfPartialNet)+'.pkl', 'wb')
-# # pickle.dump(IRs_list_VOnly, pkl_file)
-# # pkl_file.close();
+## 2. info analysis based on Visual Inputs
+nTrans = 50;
+results_reshaped_for_analysis_untrained = np.zeros((nObj,nTrans,nRow,nCol,nDep))
+results_reshaped_for_analysis_trained = np.zeros((nObj,nTrans,nRow,nCol,nDep))
+       
+for s in range(nObj):
+    results_reshaped_for_analysis_untrained[s,:50] = predictedResult_untrained[s*50:(s+1)*50]
+           
+    results_reshaped_for_analysis_trained[s,:50] = predictedResult_trained[s*50:(s+1)*50]
+           
+# IRs_list_VOnly, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=False,nBins=3)
+IRs_list_VOnly, IRs_weighted_list_VOnly = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=False,nBins=10)
+# IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True,thresholdMode=True)
+# IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis_avg(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True)
+       
+# plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_weighted_list_VOnly[1],results=results_all_trained,title="based on info about V");
+# pkl_file = open('data/singleCellInfo_inconsistent_V-Only_bin10_l'+str(outputLayerOfPartialNet)+'.pkl', 'wb')
+# pickle.dump(IRs_list_VOnly, pkl_file)
+# pkl_file.close();
 
 
   
      
-# ## 3. info analysis based on Audio Inputs
-# # reshape result to easily use single cell info analysis
-# # nObj = 10;
-# nTrans = 50;
-# # nRow = np.shape(predictedResult_untrained)[1];
-# # nCol = np.shape(predictedResult_untrained)[2];
-# # nDep = np.shape(predictedResult_untrained)[3];
-#       
-# results_reshaped_for_analysis_untrained = np.zeros((nObj,nTrans,nRow,nCol,nDep))
-# results_reshaped_for_analysis_trained = np.zeros((nObj,nTrans,nRow,nCol,nDep))
-#       
-# for s in range(nObj):
-#     results_reshaped_for_analysis_untrained[s,:50] = predictedResult_untrained[500+s*50:500+(s+1)*50]
-#           
-#     results_reshaped_for_analysis_trained[s,:50] = predictedResult_trained[500+s*50:500+(s+1)*50]
-#           
-#       
-# # IRs_list_AOnly, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=False,nBins=3)
-# IRs_list_AOnly, IRs_weighted_list_AOnly = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=False,nBins=10)
-# # IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True,thresholdMode=True)
-# # IRs_list, IRs_weighted_list_avg = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True)
-#       
-# # plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_weighted_list_AOnly[1],results=results_all_trained,title="based on info about A");
-# 
-# # pkl_file = open('data/singleCellInfo_consistent_vs_inconsistent_A-Only_bin10_l'+str(outputLayerOfPartialNet)+'.pkl', 'wb')
-# # pickle.dump(IRs_list_AOnly, pkl_file)
-# # pkl_file.close();
+## 3. info analysis based on Audio Inputs
+# reshape result to easily use single cell info analysis
+# nObj = 10;
+nTrans = 50;
+# nRow = np.shape(predictedResult_untrained)[1];
+# nCol = np.shape(predictedResult_untrained)[2];
+# nDep = np.shape(predictedResult_untrained)[3];
+       
+results_reshaped_for_analysis_untrained = np.zeros((nObj,nTrans,nRow,nCol,nDep))
+results_reshaped_for_analysis_trained = np.zeros((nObj,nTrans,nRow,nCol,nDep))
+       
+for s in range(nObj):
+    results_reshaped_for_analysis_untrained[s,:50] = predictedResult_untrained[500+s*50:500+(s+1)*50]
+           
+    results_reshaped_for_analysis_trained[s,:50] = predictedResult_trained[500+s*50:500+(s+1)*50]
+           
+       
+# IRs_list_AOnly, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=False,nBins=3)
+IRs_list_AOnly, IRs_weighted_list_AOnly = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=False,nBins=10)
+# IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True,thresholdMode=True)
+# IRs_list, IRs_weighted_list_avg = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True)
+       
+# plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_weighted_list_AOnly[1],results=results_all_trained,title="based on info about A");
+ 
+# pkl_file = open('data/singleCellInfo_inconsistent_A-Only_bin10_l'+str(outputLayerOfPartialNet)+'.pkl', 'wb')
+# pickle.dump(IRs_list_AOnly, pkl_file)
+# pkl_file.close();
      
      
      
@@ -573,8 +609,7 @@ results_all_trained = results_reshaped_for_analysis_trained;
 
 ## 4. show the stat of the single cell info analysis ##
      
-# analysis.countCellsWithSelectivity(IRs_list_VOnly,IRs_list_AOnly,results_all_trained,plotOn=True,infoThreshold = 1.0);
-# analysis.countCellsWithSelectivity(IRs_list_VOnly,IRs_list_AOnly,results_all_trained,plotOn=True,infoThreshold = 1.0);
+analysis.countCellsWithSelectivity(IRs_list_VOnly,IRs_list_AOnly,results_all_trained,plotOn=True,infoThreshold = 1.0);
 # analysis.countCellsWithSelectivity_or(IRs_list_VOnly,IRs_list_AOnly,results_all_trained,plotOn=True,infoThreshold = 1.3);
 
 
@@ -592,13 +627,13 @@ results_all_trained = results_reshaped_for_analysis_trained;
 ## run PCA ##
 #############
  
-# shape = np.shape(predictedResult_trained);
-# results_forPCA_untrained = predictedResult_untrained.reshape(shape[0],np.size(predictedResult_untrained[0]));
-# results_forPCA_trained = predictedResult_trained.reshape(shape[0],np.size(predictedResult_trained[0]));
-#        
-# ## 1. PCA over stimulus category
-# analysis.runPCA(results_forPCA_untrained);
-# analysis.runPCA(results_forPCA_trained);
+shape = np.shape(predictedResult_trained);
+results_forPCA_untrained = predictedResult_untrained.reshape(shape[0],np.size(predictedResult_untrained[0]));
+results_forPCA_trained = predictedResult_trained.reshape(shape[0],np.size(predictedResult_trained[0]));
+        
+## 1. PCA over stimulus category
+analysis.runPCA(results_forPCA_untrained);
+analysis.runPCA(results_forPCA_trained);
 #  
 ## 2. PCA over cells
 # analysis.runPCAAboutUnits(np.transpose(results_forPCA_untrained),np.transpose(results_forPCA_trained),IRs_list_VOnly,IRs_list_AOnly);

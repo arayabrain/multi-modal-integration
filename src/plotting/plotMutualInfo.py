@@ -70,3 +70,74 @@ for i in range(4):
 plt.legend();
 plt.subplots_adjust(hspace=1.0)
 plt.show()
+
+
+
+
+## display the info. table  
+plt.subplot(3,2,1);
+plt.gray()
+# im = plt.imshow(IV_untrained,vmin=0,vmax=1, aspect="auto");
+im = plt.imshow(np.reshape(np.mean(IV_untrained,axis=1),(28,28)),vmin=0,vmax=1);
+plt.colorbar(im)
+plt.title("Visual inputs (Untrained)");
+# plt.xlabel("Encoded Units");
+# plt.ylabel("Input Units")
+plt.subplot(3,2,2);
+# im = plt.imshow(IA_untrained,vmin=0,vmax=1, aspect="auto");
+im = plt.imshow(np.reshape(np.mean(IA_untrained,axis=1),(14,56)),vmin=0,vmax=1);
+
+plt.colorbar(im)
+plt.title("Audio inputs (Untrained)");
+# plt.xlabel("Encoded Units");
+# plt.ylabel("Input Units")
+
+
+
+plt.subplot(3,2,3);
+plt.gray()
+# im = plt.imshow(IV_untrained,vmin=0,vmax=1, aspect="auto");
+im = plt.imshow(np.reshape(np.mean(IV_shuffled,axis=1),(28,28)),vmin=0,vmax=1);
+plt.colorbar(im)
+plt.title("Visual inputs (Shuffled)");
+# plt.xlabel("Encoded Units");
+# plt.ylabel("Input Units")
+plt.subplot(3,2,4);
+# im = plt.imshow(IA_untrained,vmin=0,vmax=1, aspect="auto");
+im = plt.imshow(np.reshape(np.mean(IA_shuffled,axis=1),(14,56)),vmin=0,vmax=1);
+
+plt.colorbar(im)
+plt.title("Audio inputs (Shuffled)");
+# plt.xlabel("Encoded Units");
+# plt.ylabel("Input Units")
+    
+plt.subplot(3,2,5)
+# im = plt.imshow(IV_trained,vmin=0,vmax=1, aspect="auto");
+im = plt.imshow(np.reshape(np.mean(IV_trained,axis=1),(28,28)),vmin=0,vmax=1);
+plt.colorbar(im)
+plt.title("Visual inputs (Trained)");
+# plt.xlabel("Encoded Units");
+# plt.ylabel("Input Units")
+    
+plt.subplot(3,2,6);
+# im = plt.imshow(IA_trained,vmin=0,vmax=1, aspect="auto");
+im = plt.imshow(np.reshape(np.mean(IA_trained,axis=1),(14,56)),vmin=0,vmax=1);
+plt.colorbar(im)
+plt.title("Audio inputs (Trained)");
+# plt.xlabel("Encoded Units");
+# plt.ylabel("Input Units")
+plt.show()
+  
+
+plt.gray();
+for i in range(8):
+    for j in range(8):
+        index = i*8+j;
+        plt.subplot(8,8,index+1);
+        # im = plt.imshow(IV_trained,vmin=0,vmax=1, aspect="auto");
+        im = plt.imshow(np.reshape(IV_trained[:,index],(28,28)),vmin=0,vmax=1);
+        plt.colorbar(im)
+#         plt.title("Visual inputs (Trained)");
+#         plt.xlabel("Encoded Units");
+#         plt.ylabel("Input Units")
+plt.show()
