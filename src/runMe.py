@@ -13,17 +13,23 @@ import analysis
 ## PARAMS      ##
 #################
 
+flag_useInconsistentTrainingDataset = False;
+
 flag_trainingOn = True; #if true, then load the saved weights
+maxItrForTraining = 5000;
+
+flag_sharedRepLearning = True;
+maxItrForSharedRepLearning = 1000;
+
 flag_plotReconstructedImages = True;
 flag_mutualInformationAnalysis = True;
 flag_singleCellInfoAnalysis = True;
 flag_PCA = True;
-flag_useInconsistentTrainingDataset = False;
 
-maxItrForTraining = 100;
 
 # experimentName = "171221_revisedStimuli_4layers_64_consistant";
 experimentName = "0000_test";
+
 if flag_useInconsistentTrainingDataset:
     experimentName = experimentName + "_inconsistent";
 else:
@@ -119,13 +125,13 @@ xTestAudio_comb[nTestSet*2:] = xTestAudio
 
 
 # shuffling the training order altogether
-shuffleOrder = np.random.permutation(nTrainSet*3);
-
-xTrainVisual_comb_shuffled = xTrainVisual_comb[shuffleOrder]
-xTrainAudio_comb_shuffled = xTrainAudio_comb[shuffleOrder]
-
-xTrainVisual_comb_allon_shuffled = xTrainVisual_comb_allon[shuffleOrder]
-xTrainAudio_comb_allon_shuffled = xTrainAudio_comb_allon[shuffleOrder]
+shuffleOrder2 = np.random.permutation(nTrainSet*3);
+ 
+xTrainVisual_comb_shuffled = xTrainVisual_comb[shuffleOrder2]
+xTrainAudio_comb_shuffled = xTrainAudio_comb[shuffleOrder2]
+ 
+xTrainVisual_comb_allon_shuffled = xTrainVisual_comb_allon[shuffleOrder2]
+xTrainAudio_comb_allon_shuffled = xTrainAudio_comb_allon[shuffleOrder2]
 
 print("** created: xTrainMnist_comb, xTrainAudio_comb, xTestMnist_comb_allon, xTrainMnist_comb_shuffled, xTrainAudio_comb_shuffled **")
 
@@ -149,7 +155,6 @@ model_full, model_partial = models.model_mixedInput_4Layers_64(outputLayerOfPart
 ## two-stage framework
 # model_full, model_partial = models.model_twoStages_4Layers_64();
 
-# plot_model(model_full, show_shapes=True, to_file='check.png')
 
 
 model_full.compile(optimizer='adadelta', loss='binary_crossentropy')
@@ -172,8 +177,8 @@ if flag_trainingOn:
     untrainedWeights_full = model_full.get_weights();
     untrainedWeights_partial = model_partial.get_weights();
      
-    phaseSize = 100;
-    while(trainingItr<=maxItrForTraining):
+    phaseSize = min(100,maxItrForTraining);
+    while(trainingItr<maxItrForTraining):
         print("** \x1b[31m"+str(trainingItr)+"/"+str(maxItrForTraining)+"\x1b[0m")
         model_full.fit([xTrainVisual_comb_shuffled, xTrainAudio_comb_shuffled], [xTrainVisual_comb_allon_shuffled, xTrainAudio_comb_allon_shuffled],
                         epochs=phaseSize,
@@ -299,11 +304,15 @@ if flag_mutualInformationAnalysis:
     results_forMutual_A_untrained = predictedResult_untrained[500:1000].reshape(500,np.size(predictedResult_untrained[0]));
          
     nBins = 10;
-      
+    
+    print("** running mutual info analysis about IV untrained **")
     IV_untrained = analysis.mutualInfo(inputs_forMutual_V,results_forMutual_V_untrained,nBins=nBins)
+    print("** running mutual info analysis about IA untrained **")
     IA_untrained = analysis.mutualInfo(inputs_forMutual_A,results_forMutual_A_untrained,nBins=nBins)
            
+    print("** running mutual info analysis about IV trained **")
     IV_trained = analysis.mutualInfo(inputs_forMutual_V,results_forMutual_V_trained,nBins=nBins)
+    print("** running mutual info analysis about IA trained **")
     IA_trained = analysis.mutualInfo(inputs_forMutual_A,results_forMutual_A_trained,nBins=nBins)
                
          
@@ -336,7 +345,9 @@ if flag_mutualInformationAnalysis:
         inputs_forMutual_V_shuffled[obj,pixel] = inputs_forMutual_V[obj_shuffled,pixel_shuffled];
         inputs_forMutual_A_shuffled[obj,pixel] = inputs_forMutual_A[obj_shuffled,pixel_shuffled];
       
+    print("** running mutual info analysis about IV shuffled **")
     IV_shuffled = analysis.mutualInfo(inputs_forMutual_V_shuffled,results_forMutual_V_trained,nBins=nBins)
+    print("** running mutual info analysis about IA shuffled **")
     IA_shuffled = analysis.mutualInfo(inputs_forMutual_A_shuffled,results_forMutual_A_trained,nBins=nBins)
      
      
@@ -415,7 +426,7 @@ if flag_singleCellInfoAnalysis:
     pkl_file = open('data/'+experimentName+'_singleCellInfo_all_l'+str(outputLayerOfPartialNet)+'.pkl', 'wb')
     pickle.dump(IRs_list, pkl_file)
     pkl_file.close();
-    print("** single cell info exported **")    
+    print("** single cell info (all) exported **")    
     
     
     ## to create shuffled result
@@ -425,7 +436,6 @@ if flag_singleCellInfoAnalysis:
     for index,index_shuffled in zip(range(nObj*nTrans),np.random.permutation(nObj*nTrans)):
         obj = index%nObj;
         trans = int(np.floor(index/nObj));
-        print(str(obj),str(trans))
         trans_shuffled = int(np.floor(index_shuffled/nObj));
         obj_shuffled = index_shuffled%nObj;
         results_reshaped_for_analysis_untrained_shuffled[obj,trans] = results_reshaped_for_analysis_untrained[obj_shuffled,trans_shuffled];
@@ -437,7 +447,6 @@ if flag_singleCellInfoAnalysis:
     pickle.dump(IRs_list_oneModalityAtTime_shuffled, pkl_file)
     pkl_file.close();
     print("** single cell info shuffled exported **")    
-         
     
        
     ## 2. info analysis based on Visual Inputs
@@ -456,6 +465,7 @@ if flag_singleCellInfoAnalysis:
     pkl_file = open('data/'+experimentName+'_singleCellInfo_V-Only_l'+str(outputLayerOfPartialNet)+'.pkl', 'wb')
     pickle.dump(IRs_list_VOnly, pkl_file)
     pkl_file.close();
+    print("** Single Cell Info (V-Only) exported. **")
     
     
     ## 3. info analysis based on Audio Inputs
@@ -477,6 +487,7 @@ if flag_singleCellInfoAnalysis:
     pkl_file = open('data/'+experimentName+'_singleCellInfo_A-Only_l'+str(outputLayerOfPartialNet)+'.pkl', 'wb')
     pickle.dump(IRs_list_AOnly, pkl_file)
     pkl_file.close();
+    print("** Single Cell Info (A-Only) exported. **")
          
 
     ## 4. show the stat of the single cell info analysis ##
@@ -507,4 +518,171 @@ if flag_PCA:
  
 
 
+
+
+
+######################################
+## Analysis:                        ##
+## Retrieving the predicted results ##
+######################################
+ 
+## analysis over the middle layer
+# model_partial.set_weights(untrainedWeights_partial);
+# predictedResult_untrained_train = model_partial.predict([xTrainVisual_shuffled, emptyInput_audio_train]);
+# predictedResult_untrained_test = model_partial.predict([emptyInput_visual_test, xTestAudio]);
+
+
+ 
+
+
+# model_full.set_weights(trainedWeights_full);
+# predictedResult_crossRep_train_V = model_full.predict([xTrainVisual_shuffled, emptyInput_audio_train]);
+# predictedResult_crossRep_test_V = model_full.predict([xTestVisual, emptyInput_audio_test]);
+#  
+# predictedResult_crossRep_train_A = model_full.predict([emptyInput_visual_train,xTrainAudio_shuffled]);
+# predictedResult_crossRep_test_A = model_full.predict([emptyInput_visual_test,xTestAudio]);
+
+
+
+model_partial.set_weights(trainedWeights_partial);
+predictedResult_crossRep_train_V = model_partial.predict([xTrainVisual_shuffled, emptyInput_audio_train]);
+predictedResult_crossRep_test_V = model_partial.predict([xTestVisual, emptyInput_audio_test]);
+ 
+predictedResult_crossRep_train_A = model_partial.predict([emptyInput_visual_train,xTrainAudio_shuffled]);
+predictedResult_crossRep_test_A = model_partial.predict([emptyInput_visual_test,xTestAudio]);
+
+
+
+
+
+
+
+########################
+## shared representation learning ##
+########################
+if flag_sharedRepLearning:
+    
+    
+    ### REVERSING INCONSISTENT PAIRS
+    if flag_useInconsistentTrainingDataset:
+        xTrainAudio_shuffled[shuffleOrder] = xTrainAudio_shuffled;
+        yTrainAudio_shuffled[shuffleOrder] = yTrainAudio_shuffled;
+    
+    #  
+    # model_crossRep = models.sharedRepLearning();
+    # 
+    # model_crossRep.compile(optimizer='adadelta', loss='binary_crossentropy')
+    # print("** model is loaded and compiled")
+    #  
+    # experimentName = '180119_crossRepLearning_consit';
+    #  
+    # plot_model(model_crossRep, show_shapes=True, to_file='data/'+experimentName+'.png')
+    # print("** model constructed **")
+    # 
+    # trainingItr = 0;
+    # model_crossRep.save_weights('data/'+experimentName+'_itr_0.weights');
+    #  
+    # untrainedWeights_crossRep = model_crossRep.get_weights();
+    #  
+    # phaseSize = 1;
+    # maxItr = 1000;
+    # while(trainingItr<=maxItr):
+    #     print("** "+ str(trainingItr)+"/"+str(maxItr))
+    #     model_crossRep.fit(predictedResult_crossRep_train_V, yTrainVisual_shuffled,
+    #                     epochs=phaseSize,
+    #                     batch_size=256,
+    #                     shuffle=True)
+    # #                     validation_data=([emptyInput_visual_test, xTestAudio], [xTestVisual, xTestAudio]))
+    #     trainingItr+=phaseSize;
+    # #     if trainingItr%10==0:
+    # #         model_crossRep.save_weights('data/'+experimentName+'_itr_'+str(trainingItr*3)+'.weights');
+    #          
+    # trainedWeights_crossRep = model_crossRep.get_weights();
+    
+    
+    
+    
+    # experimentName = '180125_crossRepLearning_consit_A2V_4layer_supervised3ayer_encodedInput';
+    # experimentName = '180123_crossRepLearning_consit_V2A_4layer_supervised1layer_encodedInput';
+    
+    # experimentName = '180216_crossRepLearning_consit_A2V_4layers_supervised3ayer_encodedInput';
+    # experimentName = '180220_crossRepLearning_consit_V2A_3layer_supervised3layer_encodedInput_ngver';
+    
+    
+    # model_crossRep = models.sharedRepLearning_decodedInput();
+    model_crossRep = models.sharedRepLearning_encodedInput();
+    
+    
+    
+    #########
+    ## V2A ##
+    #########
+    
+    print("*** Shared Rep Learning (V2A)");
+    
+    # model_crossRep.compile(optimizer='adadelta', loss='binary_crossentropy',metrics=['categorical_accuracy'])
+    model_crossRep.compile(optimizer='adadelta', loss='categorical_crossentropy',metrics=['categorical_accuracy'])
+    print("** model is loaded and compiled")
+     
+#     plot_model(model_crossRep, show_shapes=True, to_file='data/'+experimentName+'_sharedRepLearning_V2A.png')
+    
+#     model_crossRep.save_weights('data/'+experimentName+'_sharedRepLearning_V2A_itr_0.weights');
+     
+#     untrainedWeights_crossRep = model_crossRep.get_weights();
+     
+    model_crossRep.fit(predictedResult_crossRep_train_V, yTrainVisual_shuffled,
+                    epochs=maxItrForSharedRepLearning,
+                    batch_size=256,
+                    validation_data=(predictedResult_crossRep_test_A, yTestAudio))
+    
+    trainedWeights_crossRep = model_crossRep.get_weights();
+    model_crossRep.save_weights('data/'+experimentName+'_sharedRepLearning_V2A_itr_'+str(maxItrForSharedRepLearning)+'.weights');
+    
+    
+    score = model_crossRep.evaluate(predictedResult_crossRep_test_V, yTestVisual, verbose=0)
+    # print('Test loss (V): ', score[0])
+    print("** Result of Visual Training (V2A) **");
+    print('Test acc. (V): ', score[1])
+    score = model_crossRep.evaluate(predictedResult_crossRep_test_A, yTestAudio, verbose=0)
+    # print('Test loss (A): ', score[0])
+    print('Test acc. (A): ', score[1])
+    
+    
+    
+    
+    
+    #########
+    ## A2V ##
+    ######### 
+    
+    print("*** Shared Rep Learning (A2V)");
+    
+    model_crossRep.compile(optimizer='adadelta', loss='categorical_crossentropy',metrics=['categorical_accuracy'])
+    print("** model is loaded and compiled")
+     
+#     plot_model(model_crossRep, show_shapes=True, to_file='data/'+experimentName+'_sharedRepLearning_A2V.png')
+    
+#     model_crossRep.save_weights('data/'+experimentName+'_sharedRepLearning_A2V_itr_0.weights');
+     
+    untrainedWeights_crossRep = model_crossRep.get_weights();
+     
+
+    # #A2V
+    model_crossRep.fit(predictedResult_crossRep_train_A, yTrainAudio_shuffled,
+                    epochs=maxItrForSharedRepLearning,
+                    batch_size=256,
+                    validation_data=(predictedResult_crossRep_test_V, yTestVisual))
+              
+     
+    trainedWeights_crossRep = model_crossRep.get_weights();
+    model_crossRep.save_weights('data/'+experimentName+'_sharedRepLearning_A2V_itr_'+str(maxItrForSharedRepLearning)+'.weights');
+    
+    score = model_crossRep.evaluate(predictedResult_crossRep_test_V, yTestVisual, verbose=0)
+    # print('Test loss (V): ', score[0])
+    print("** Result of Auditory Training (A2V) **");
+    print('Test acc. (V): ', score[1])
+    score = model_crossRep.evaluate(predictedResult_crossRep_test_A, yTestAudio, verbose=0)
+    # print('Test loss (A): ', score[0])
+    print('Test acc. (A): ', score[1])
+        
 
