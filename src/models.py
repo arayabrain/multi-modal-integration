@@ -6,6 +6,228 @@ from keras import regularizers
 from params import *
 
 
+
+
+
+###
+# model used in the paper
+###
+def model_mixedInput_4Layers_64(outputLayerOfPartialNet = 4):
+    layerDim = 64;
+
+    inputs_V = Input(shape=(dim,dim,))
+    inputs_V_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_V);
+    inputs_A = Input(shape=(int(dim/2),dim*2,))
+    inputs_A_reshaped = Reshape((dim*dim,), input_shape=(int(dim/2), dim*2))(inputs_A);
+    
+    
+    x1 = concatenate([inputs_V_reshaped, inputs_A_reshaped]);
+    l1 = Dense(layerDim, activation='sigmoid')(x1);
+    l2 = Dense(layerDim, activation='sigmoid')(l1)
+    l3 = Dense(layerDim, activation='sigmoid')(l2)
+    encoded = Dense(layerDim, activation='sigmoid')(l3)
+    
+    
+    x1 = Dense(layerDim, activation='relu')(encoded)
+    x1 = Dense(layerDim, activation='relu')(x1)
+    x1 = Dense(dim*dim, activation='sigmoid')(x1)
+    decoded_1 =  Reshape((dim,dim), input_shape=(dim*dim,1))(x1);
+    
+    x2 = Dense(layerDim, activation='relu')(encoded)
+    x2 = Dense(layerDim, activation='relu')(x2)
+    x2 = Dense(dim*dim, activation='sigmoid')(x2)
+    decoded_2 = Reshape((int(dim/2),dim*2), input_shape=(dim*dim,1))(x2);
+    
+    
+    model_full = Model([inputs_V,inputs_A], [decoded_1,decoded_2])
+    if (outputLayerOfPartialNet==1):
+        model_partial = Model([inputs_V,inputs_A], l1)
+    elif (outputLayerOfPartialNet==2):
+        model_partial = Model([inputs_V,inputs_A], l2)
+    elif (outputLayerOfPartialNet==3):
+        model_partial = Model([inputs_V,inputs_A], l3)
+    elif (outputLayerOfPartialNet==4):
+        model_partial = Model([inputs_V,inputs_A], encoded)
+    
+    return (model_full, model_partial);
+
+def model_mixedInput_1Layer_64():
+    layerDim = 64;
+ 
+    inputs_V = Input(shape=(dim,dim,))
+    inputs_V_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_V);
+    inputs_A = Input(shape=(int(dim/2),dim*2,))
+    inputs_A_reshaped = Reshape((dim*dim,), input_shape=(int(dim/2), dim*2))(inputs_A);
+     
+     
+    x1 = concatenate([inputs_V_reshaped, inputs_A_reshaped]);
+    encoded = Dense(layerDim, activation='sigmoid')(x1)
+     
+     
+    x1 = Dense(dim*dim, activation='sigmoid')(encoded)
+    decoded_1 =  Reshape((dim,dim), input_shape=(dim*dim,1))(x1);
+     
+    x2 = Dense(dim*dim, activation='sigmoid')(encoded)
+    decoded_2 = Reshape((int(dim/2),dim*2), input_shape=(dim*dim,1))(x2);
+     
+     
+    model_full = Model([inputs_V,inputs_A], [decoded_1,decoded_2])
+    model_partial = Model([inputs_V,inputs_A], encoded)
+     
+    return (model_full, model_partial);
+
+
+def model_mixedInput_2Layers_64():
+    layerDim = 64;
+ 
+    inputs_V = Input(shape=(dim,dim,))
+    inputs_V_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_V);
+    inputs_A = Input(shape=(int(dim/2),dim*2,))
+    inputs_A_reshaped = Reshape((dim*dim,), input_shape=(int(dim/2), dim*2))(inputs_A);
+     
+     
+    x1 = concatenate([inputs_V_reshaped, inputs_A_reshaped]);
+    l1 = Dense(layerDim, activation='sigmoid')(x1)
+    encoded = Dense(layerDim, activation='sigmoid')(l1)
+     
+     
+    x1 = Dense(layerDim, activation='relu')(encoded)
+    x1 = Dense(dim*dim, activation='sigmoid')(x1)
+    decoded_1 =  Reshape((dim,dim), input_shape=(dim*dim,1))(x1);
+     
+    x2 = Dense(layerDim, activation='relu')(encoded)
+    x2 = Dense(dim*dim, activation='sigmoid')(x2)
+    decoded_2 = Reshape((int(dim/2),dim*2), input_shape=(dim*dim,1))(x2);
+     
+     
+    model_full = Model([inputs_V,inputs_A], [decoded_1,decoded_2])
+    model_partial = Model([inputs_V,inputs_A], encoded)
+     
+    return (model_full, model_partial);
+
+def model_mixedInput_3Layers_64():
+    layerDim = 64;
+ 
+    inputs_V = Input(shape=(dim,dim,))
+    inputs_V_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_V);
+    inputs_A = Input(shape=(int(dim/2),dim*2,))
+    inputs_A_reshaped = Reshape((dim*dim,), input_shape=(int(dim/2), dim*2))(inputs_A);
+     
+     
+    x1 = concatenate([inputs_V_reshaped, inputs_A_reshaped]);
+    l1 = Dense(layerDim, activation='sigmoid')(x1)
+    l2 = Dense(layerDim, activation='sigmoid')(l1)
+    encoded = Dense(layerDim, activation='sigmoid')(l2)
+     
+     
+    x1 = Dense(layerDim, activation='relu')(encoded)
+    x1 = Dense(dim*dim, activation='relu')(x1)
+    x1 = Dense(dim*dim, activation='sigmoid')(x1)
+    decoded_1 =  Reshape((dim,dim), input_shape=(dim*dim,1))(x1);
+     
+    x2 = Dense(layerDim, activation='relu')(encoded)
+    x2 = Dense(dim*dim, activation='relu')(x2)
+    x2 = Dense(dim*dim, activation='sigmoid')(x2)
+    decoded_2 = Reshape((int(dim/2),dim*2), input_shape=(dim*dim,1))(x2);
+     
+     
+    model_full = Model([inputs_V,inputs_A], [decoded_1,decoded_2])
+    model_partial = Model([inputs_V,inputs_A], encoded)
+     
+    return (model_full, model_partial);
+
+
+def model9_separateInputs_4layer_reluDecoder_64():
+    layerDim = 64;
+ 
+    inputs_V = Input(shape=(dim,dim,))
+    inputs_V_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_V);
+    vl1 = Dense(layerDim, activation='sigmoid')(inputs_V_reshaped);
+    vl2 = Dense(layerDim, activation='sigmoid')(vl1)
+    vl3 = Dense(layerDim, activation='sigmoid')(vl2)
+    
+    inputs_A = Input(shape=(int(dim/2),dim*2,))
+    inputs_A_reshaped = Reshape((dim*dim,), input_shape=(int(dim/2), dim*2))(inputs_A);
+    al1 = Dense(layerDim, activation='sigmoid')(inputs_A_reshaped);
+    al2 = Dense(layerDim, activation='sigmoid')(al1)
+    al3 = Dense(layerDim, activation='sigmoid')(al2)
+    
+    x1 = concatenate([vl3, al3]);
+    encoded = Dense(layerDim, activation='sigmoid')(x1)
+    
+    x1 = Dense(layerDim, activation='relu')(encoded)
+    x1 = Dense(layerDim, activation='relu')(x1)
+    x1 = Dense(dim*dim, activation='sigmoid')(x1)
+    decoded_1 =  Reshape((dim,dim), input_shape=(dim*dim,1))(x1);
+    
+    x2 = Dense(layerDim, activation='relu')(encoded)
+    x2 = Dense(layerDim, activation='relu')(x2)
+    x2 = Dense(dim*dim, activation='sigmoid')(x2)
+    decoded_2 = Reshape((int(dim/2),dim*2), input_shape=(dim*dim,1))(x2);
+
+    model_full = Model([inputs_V,inputs_A], [decoded_1,decoded_2])
+    model_partial = Model([inputs_V,inputs_A], encoded)
+     
+    return (model_full, model_partial);
+
+
+def model_twoStages_4Layers_64():
+    layerDim = 64;
+ 
+    inputs_V = Input(shape=(dim,dim,))
+    inputs_V_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_V);
+    vl1 = Dense(layerDim, activation='sigmoid')(inputs_V_reshaped);
+    vl2 = Dense(layerDim, activation='sigmoid')(vl1)
+    
+    inputs_A = Input(shape=(int(dim/2),dim*2,))
+    inputs_A_reshaped = Reshape((dim*dim,), input_shape=(int(dim/2), dim*2))(inputs_A);
+    al1 = Dense(layerDim, activation='sigmoid')(inputs_A_reshaped);
+    al2 = Dense(layerDim, activation='sigmoid')(al1)
+    
+    x1 = concatenate([vl2, al2]);
+    encoded = Dense(layerDim, activation='sigmoid')(x1)
+    
+    x1 = Dense(layerDim, activation='relu')(encoded)
+    x1 = Dense(layerDim, activation='relu')(x1)
+    x1 = Dense(dim*dim, activation='sigmoid')(x1)
+    decoded_1 =  Reshape((dim,dim), input_shape=(dim*dim,1))(x1);
+    
+    x2 = Dense(layerDim, activation='relu')(encoded)
+    x2 = Dense(layerDim, activation='relu')(x2)
+    x2 = Dense(dim*dim, activation='sigmoid')(x2)
+    decoded_2 = Reshape((int(dim/2),dim*2), input_shape=(dim*dim,1))(x2);
+
+    model_full = Model([inputs_V,inputs_A], [decoded_1,decoded_2])
+    model_partial = Model([inputs_V,inputs_A], encoded)
+     
+    return (model_full, model_partial);
+
+
+###
+# Model to conduct the shared representation learning from the encoded representations at the middle of the autoencoder
+### 
+def sharedRepLearning_encodedInput():
+    layerDim = 64;
+
+    inputs = Input(shape=(layerDim,))
+#     l1 = Dense(layerDim, activation='relu')(inputs)
+#     l2 = Dense(layerDim, activation='relu')(l1)
+#     dropout = Dropout(0.2)(inputs)
+    l1 = Dense(64, activation='relu')(inputs)
+    l1 = Dropout(0.2)(l1)
+    l2 = Dense(64, activation='relu')(l1)
+    l2 = Dropout(0.2)(l2)
+    l3 = Dense(10, activation='softmax')(l2)
+    
+    model_supervised = Model(inputs, l3)
+    
+    return model_supervised;
+
+
+
+
+
+
 # def model1():
 #     ## multimodal deep encoder. 
 #     inputs_1 = Input(shape=(dim,dim))
@@ -470,269 +692,3 @@ from params import *
 #     model_partial = Model([inputs_V,inputs_A], encoded)
 #     
 #     return (model_full, model_partial);
-
-
-###
-# model used in the paper
-###
-def model8_revisedInput_4layer_reluDecoder_64(outputLayerOfPartialNet = 4):
-    layerDim = 64;
-
-    inputs_V = Input(shape=(dim,dim,))
-    inputs_V_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_V);
-    inputs_A = Input(shape=(int(dim/2),dim*2,))
-    inputs_A_reshaped = Reshape((dim*dim,), input_shape=(int(dim/2), dim*2))(inputs_A);
-    
-    
-    x1 = concatenate([inputs_V_reshaped, inputs_A_reshaped]);
-    l1 = Dense(layerDim, activation='sigmoid')(x1);
-    l2 = Dense(layerDim, activation='sigmoid')(l1)
-    l3 = Dense(layerDim, activation='sigmoid')(l2)
-    encoded = Dense(layerDim, activation='sigmoid')(l3)
-    
-    
-    x1 = Dense(layerDim, activation='relu')(encoded)
-    x1 = Dense(layerDim, activation='relu')(x1)
-    x1 = Dense(dim*dim, activation='sigmoid')(x1)
-    decoded_1 =  Reshape((dim,dim), input_shape=(dim*dim,1))(x1);
-    
-    x2 = Dense(layerDim, activation='relu')(encoded)
-    x2 = Dense(layerDim, activation='relu')(x2)
-    x2 = Dense(dim*dim, activation='sigmoid')(x2)
-    decoded_2 = Reshape((int(dim/2),dim*2), input_shape=(dim*dim,1))(x2);
-    
-    
-    model_full = Model([inputs_V,inputs_A], [decoded_1,decoded_2])
-    if (outputLayerOfPartialNet==1):
-        model_partial = Model([inputs_V,inputs_A], l1)
-    elif (outputLayerOfPartialNet==2):
-        model_partial = Model([inputs_V,inputs_A], l2)
-    elif (outputLayerOfPartialNet==3):
-        model_partial = Model([inputs_V,inputs_A], l3)
-    elif (outputLayerOfPartialNet==4):
-        model_partial = Model([inputs_V,inputs_A], encoded)
-    
-    return (model_full, model_partial);
-
-def model8_revisedInput_1layer_reluDecoder_64():
-    layerDim = 64;
- 
-    inputs_V = Input(shape=(dim,dim,))
-    inputs_V_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_V);
-    inputs_A = Input(shape=(int(dim/2),dim*2,))
-    inputs_A_reshaped = Reshape((dim*dim,), input_shape=(int(dim/2), dim*2))(inputs_A);
-     
-     
-    x1 = concatenate([inputs_V_reshaped, inputs_A_reshaped]);
-    encoded = Dense(layerDim, activation='sigmoid')(x1)
-     
-     
-    x1 = Dense(dim*dim, activation='sigmoid')(encoded)
-    decoded_1 =  Reshape((dim,dim), input_shape=(dim*dim,1))(x1);
-     
-    x2 = Dense(dim*dim, activation='sigmoid')(encoded)
-    decoded_2 = Reshape((int(dim/2),dim*2), input_shape=(dim*dim,1))(x2);
-     
-     
-    model_full = Model([inputs_V,inputs_A], [decoded_1,decoded_2])
-    model_partial = Model([inputs_V,inputs_A], encoded)
-     
-    return (model_full, model_partial);
-
-
-def model8_revisedInput_2layer_reluDecoder_64():
-    layerDim = 64;
- 
-    inputs_V = Input(shape=(dim,dim,))
-    inputs_V_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_V);
-    inputs_A = Input(shape=(int(dim/2),dim*2,))
-    inputs_A_reshaped = Reshape((dim*dim,), input_shape=(int(dim/2), dim*2))(inputs_A);
-     
-     
-    x1 = concatenate([inputs_V_reshaped, inputs_A_reshaped]);
-    l1 = Dense(layerDim, activation='sigmoid')(x1)
-    encoded = Dense(layerDim, activation='sigmoid')(l1)
-     
-     
-    x1 = Dense(layerDim, activation='relu')(encoded)
-    x1 = Dense(dim*dim, activation='sigmoid')(x1)
-    decoded_1 =  Reshape((dim,dim), input_shape=(dim*dim,1))(x1);
-     
-    x2 = Dense(layerDim, activation='relu')(encoded)
-    x2 = Dense(dim*dim, activation='sigmoid')(x2)
-    decoded_2 = Reshape((int(dim/2),dim*2), input_shape=(dim*dim,1))(x2);
-     
-     
-    model_full = Model([inputs_V,inputs_A], [decoded_1,decoded_2])
-    model_partial = Model([inputs_V,inputs_A], encoded)
-     
-    return (model_full, model_partial);
-
-def model8_revisedInput_3layer_reluDecoder_64():
-    layerDim = 64;
- 
-    inputs_V = Input(shape=(dim,dim,))
-    inputs_V_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_V);
-    inputs_A = Input(shape=(int(dim/2),dim*2,))
-    inputs_A_reshaped = Reshape((dim*dim,), input_shape=(int(dim/2), dim*2))(inputs_A);
-     
-     
-    x1 = concatenate([inputs_V_reshaped, inputs_A_reshaped]);
-    l1 = Dense(layerDim, activation='sigmoid')(x1)
-    l2 = Dense(layerDim, activation='sigmoid')(l1)
-    encoded = Dense(layerDim, activation='sigmoid')(l2)
-     
-     
-    x1 = Dense(layerDim, activation='relu')(encoded)
-    x1 = Dense(dim*dim, activation='relu')(x1)
-    x1 = Dense(dim*dim, activation='sigmoid')(x1)
-    decoded_1 =  Reshape((dim,dim), input_shape=(dim*dim,1))(x1);
-     
-    x2 = Dense(layerDim, activation='relu')(encoded)
-    x2 = Dense(dim*dim, activation='relu')(x2)
-    x2 = Dense(dim*dim, activation='sigmoid')(x2)
-    decoded_2 = Reshape((int(dim/2),dim*2), input_shape=(dim*dim,1))(x2);
-     
-     
-    model_full = Model([inputs_V,inputs_A], [decoded_1,decoded_2])
-    model_partial = Model([inputs_V,inputs_A], encoded)
-     
-    return (model_full, model_partial);
-
-
-def model9_separateInputs_4layer_reluDecoder_64():
-    layerDim = 64;
- 
-    inputs_V = Input(shape=(dim,dim,))
-    inputs_V_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_V);
-    vl1 = Dense(layerDim, activation='sigmoid')(inputs_V_reshaped);
-    vl2 = Dense(layerDim, activation='sigmoid')(vl1)
-    vl3 = Dense(layerDim, activation='sigmoid')(vl2)
-    
-    inputs_A = Input(shape=(int(dim/2),dim*2,))
-    inputs_A_reshaped = Reshape((dim*dim,), input_shape=(int(dim/2), dim*2))(inputs_A);
-    al1 = Dense(layerDim, activation='sigmoid')(inputs_A_reshaped);
-    al2 = Dense(layerDim, activation='sigmoid')(al1)
-    al3 = Dense(layerDim, activation='sigmoid')(al2)
-    
-    x1 = concatenate([vl3, al3]);
-    encoded = Dense(layerDim, activation='sigmoid')(x1)
-    
-    x1 = Dense(layerDim, activation='relu')(encoded)
-    x1 = Dense(layerDim, activation='relu')(x1)
-    x1 = Dense(dim*dim, activation='sigmoid')(x1)
-    decoded_1 =  Reshape((dim,dim), input_shape=(dim*dim,1))(x1);
-    
-    x2 = Dense(layerDim, activation='relu')(encoded)
-    x2 = Dense(layerDim, activation='relu')(x2)
-    x2 = Dense(dim*dim, activation='sigmoid')(x2)
-    decoded_2 = Reshape((int(dim/2),dim*2), input_shape=(dim*dim,1))(x2);
-
-    model_full = Model([inputs_V,inputs_A], [decoded_1,decoded_2])
-    model_partial = Model([inputs_V,inputs_A], encoded)
-     
-    return (model_full, model_partial);
-
-
-def model9_separateInputs_3layer_reluDecoder_64():
-    layerDim = 64;
- 
-    inputs_V = Input(shape=(dim,dim,))
-    inputs_V_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_V);
-    vl1 = Dense(layerDim, activation='sigmoid')(inputs_V_reshaped);
-    vl2 = Dense(layerDim, activation='sigmoid')(vl1)
-    
-    inputs_A = Input(shape=(int(dim/2),dim*2,))
-    inputs_A_reshaped = Reshape((dim*dim,), input_shape=(int(dim/2), dim*2))(inputs_A);
-    al1 = Dense(layerDim, activation='sigmoid')(inputs_A_reshaped);
-    al2 = Dense(layerDim, activation='sigmoid')(al1)
-    
-    x1 = concatenate([vl2, al2]);
-    encoded = Dense(layerDim, activation='sigmoid')(x1)
-    
-    x1 = Dense(layerDim, activation='relu')(encoded)
-    x1 = Dense(layerDim, activation='relu')(x1)
-    x1 = Dense(dim*dim, activation='sigmoid')(x1)
-    decoded_1 =  Reshape((dim,dim), input_shape=(dim*dim,1))(x1);
-    
-    x2 = Dense(layerDim, activation='relu')(encoded)
-    x2 = Dense(layerDim, activation='relu')(x2)
-    x2 = Dense(dim*dim, activation='sigmoid')(x2)
-    decoded_2 = Reshape((int(dim/2),dim*2), input_shape=(dim*dim,1))(x2);
-
-    model_full = Model([inputs_V,inputs_A], [decoded_1,decoded_2])
-    model_partial = Model([inputs_V,inputs_A], encoded)
-     
-    return (model_full, model_partial);
-
-
-
-# def model8_revisedInput_1layer_reluDecoder_64_decoderMod():
-#     layerDim = 64;
-# 
-#     inputs_V = Input(shape=(dim,dim,))
-#     inputs_V_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_V);
-#     inputs_A = Input(shape=(int(dim/2),dim*2,))
-#     inputs_A_reshaped = Reshape((dim*dim,), input_shape=(int(dim/2), dim*2))(inputs_A);
-#     
-#     
-#     x1 = concatenate([inputs_V_reshaped, inputs_A_reshaped]);
-#     encoded = Dense(layerDim, activation='sigmoid')(x1)
-#     
-#     
-# #     x1 = Dense(layerDim, activation='relu')(encoded)
-# #     x1 = Dense(layerDim, activation='relu')(x1)
-#     x1 = Dense(dim*dim, activation='sigmoid')(encoded)
-#     decoded_1 =  Reshape((dim,dim), input_shape=(dim*dim,1))(x1);
-#     
-# #     x2 = Dense(layerDim, activation='relu')(encoded)
-# #     x2 = Dense(layerDim, activation='relu')(x2)
-#     x2 = Dense(dim*dim, activation='sigmoid')(encoded)
-#     decoded_2 = Reshape((int(dim/2),dim*2), input_shape=(dim*dim,1))(x2);
-#     
-#     
-#     model_full = Model([inputs_V,inputs_A], [decoded_1,decoded_2])
-#     model_partial = Model([inputs_V,inputs_A], encoded)
-#     
-#     return (model_full, model_partial);
-
-###
-# Model to conduct the shared representation learning from the encoded representations at the middle of the autoencoder
-### 
-def sharedRepLearning_encodedInput():
-    layerDim = 64;
-
-    inputs = Input(shape=(layerDim,))
-#     l1 = Dense(layerDim, activation='relu')(inputs)
-#     l2 = Dense(layerDim, activation='relu')(l1)
-#     dropout = Dropout(0.2)(inputs)
-    l1 = Dense(64, activation='relu')(inputs)
-    l1 = Dropout(0.2)(l1)
-    l2 = Dense(64, activation='relu')(l1)
-    l2 = Dropout(0.2)(l2)
-    l3 = Dense(10, activation='softmax')(l2)
-    
-    model_supervised = Model(inputs, l3)
-    
-    return model_supervised;
-
-
-# def sharedRepLearning_decodedInput():
-#     layerDim = 64;
-# 
-#     inputs_V = Input(shape=(dim,dim,))
-#     inputs_V_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_V);
-#     inputs_A = Input(shape=(int(dim/2),dim*2,))
-#     inputs_A_reshaped = Reshape((dim*dim,), input_shape=(int(dim/2), dim*2))(inputs_A);
-#     
-#     
-#     x1 = concatenate([inputs_V_reshaped, inputs_A_reshaped]);
-# #     l1 = Dense(layerDim, activation='relu')(x1)
-# #     l2 = Dense(layerDim, activation='relu')(l1)
-#     dropout = Dropout(0.5)(x1)
-#     l3 = Dense(10, activation='softmax')(dropout)
-#     model_supervised = Model([inputs_V,inputs_A], l3)
-#     
-#     return model_supervised;
-
-
