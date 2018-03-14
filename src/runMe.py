@@ -13,22 +13,24 @@ import analysis
 ## PARAMS      ##
 #################
 
-flag_useInconsistentTrainingDataset = False;
+flag_useInconsistentTrainingDataset = True;
 
-flag_trainingOn = True; #if true, then load the saved weights
+flag_trainingOn = False; #if true, then load the saved weights
 maxItrForTraining = 5000;
 
-flag_sharedRepLearning = True;
+flag_sharedRepLearning = False;
 maxItrForSharedRepLearning = 1000;
 
-flag_plotReconstructedImages = True;
-flag_mutualInformationAnalysis = True;
+flag_plotReconstructedImages = False;
+flag_mutualInformationAnalysis = False;
 flag_singleCellInfoAnalysis = True;
-flag_PCA = True;
+flag_plot_singleCell = False;
+flag_PCA = False;
 
 
 # experimentName = "171221_revisedStimuli_4layers_64_consistant";
-experimentName = "0000_test";
+experimentName = "4layers_64";
+# experimentName = "4layers_64_Ngver";
 
 if flag_useInconsistentTrainingDataset:
     experimentName = experimentName + "_inconsistent";
@@ -418,7 +420,7 @@ if flag_singleCellInfoAnalysis:
         results_reshaped_for_analysis_trained[s,50:100] = predictedResult_trained[500+s*50:500+(s+1)*50]
         results_reshaped_for_analysis_trained[s,100:150] = predictedResult_trained[1000+s*50:1000+(s+1)*50]
                
-    IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True,nBins=10)
+    IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=flag_plot_singleCell,nBins=10)
     # plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_weighted_list[1],results=results_reshaped_for_analysis_trained);
              
              
@@ -442,7 +444,7 @@ if flag_singleCellInfoAnalysis:
         results_reshaped_for_analysis_trained_shuffled[obj,trans] = results_reshaped_for_analysis_trained[obj_shuffled,trans_shuffled];
      
   
-    IRs_list_oneModalityAtTime_shuffled, IRs_weighted_list_oneModalityAtTime = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained_shuffled,results_reshaped_for_analysis_trained_shuffled,plotOn=True,nBins=10)
+    IRs_list_oneModalityAtTime_shuffled, IRs_weighted_list_oneModalityAtTime = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained_shuffled,results_reshaped_for_analysis_trained_shuffled,plotOn=flag_plot_singleCell,nBins=10)
     pkl_file = open('data/'+experimentName+'_singleCellInfo_all_shuffled_l'+str(outputLayerOfPartialNet)+'.pkl', 'wb')
     pickle.dump(IRs_list_oneModalityAtTime_shuffled, pkl_file)
     pkl_file.close();
@@ -459,7 +461,7 @@ if flag_singleCellInfoAnalysis:
                
         results_reshaped_for_analysis_trained[s,:50] = predictedResult_trained[s*50:(s+1)*50]
                
-    IRs_list_VOnly, IRs_weighted_list_VOnly = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True,nBins=10)
+    IRs_list_VOnly, IRs_weighted_list_VOnly = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=flag_plot_singleCell,nBins=10)
            
 #     plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_weighted_list_VOnly[1],results=results_all_trained,title="based on info about V");
     pkl_file = open('data/'+experimentName+'_singleCellInfo_V-Only_l'+str(outputLayerOfPartialNet)+'.pkl', 'wb')
@@ -480,7 +482,7 @@ if flag_singleCellInfoAnalysis:
         results_reshaped_for_analysis_trained[s,:50] = predictedResult_trained[500+s*50:500+(s+1)*50]
                
            
-    IRs_list_AOnly, IRs_weighted_list_AOnly = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=True,nBins=10)
+    IRs_list_AOnly, IRs_weighted_list_AOnly = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=flag_plot_singleCell,nBins=10)
            
 #     plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_weighted_list_AOnly[1],results=results_all_trained,title="based on info about A");
      

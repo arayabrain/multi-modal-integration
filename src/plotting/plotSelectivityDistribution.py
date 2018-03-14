@@ -14,84 +14,61 @@ w = 0.2
 
 
 
-inconsistent=np.array([[31,12,6,0],
-[44,25,15,3],
-[49,34,26,4],
-[44,21,10,2]])
+differentLayers_inconsistent=np.array([[12.0,21.0,4.0,1.0],
+                       [20.0,17.0,7.0,0.0],
+                       [28.0,7.0,22.0,0.0],
+                       [33.0,9.0,13.0,2.0]])
  
-consistent=np.array([[41,20,12,0],#L1
-[52,53,43,15],
-[52,54,46,32],
-[48,39,37,29]])
+differentLayers_consistent=np.array([[10.0,24.0,3.0,7.0],
+                     [3.0,16.0,17.0,13.0],
+                     [16.0,3.0,15.0,26.0],
+                     [12.0,3.0,9.0,29.0]])
 
-inconsistent[:,0]=inconsistent[:,0]-inconsistent[:,2]
-inconsistent[:,1]=inconsistent[:,1]-inconsistent[:,2]
-inconsistent[:,2]=inconsistent[:,2]-inconsistent[:,3]
-
-consistent[:,0]=consistent[:,0]-consistent[:,2]
-consistent[:,1]=consistent[:,1]-consistent[:,2]
-consistent[:,2]=consistent[:,2]-consistent[:,3]
 
 
 # itrList = [0,500,1000,1500,2000,2500,3000,3500,4000,4500,5000];
 
-differentLayers_consistent=np.array([[19,29,9,6],
-                          [28,43,23,10],
-                          [55,40,36,21],
-                          [48,39,37,29]])
-
-differentLayers_consistent[:,0]=differentLayers_consistent[:,0]-differentLayers_consistent[:,2]
-differentLayers_consistent[:,1]=differentLayers_consistent[:,1]-differentLayers_consistent[:,2]
-differentLayers_consistent[:,2]=differentLayers_consistent[:,2]-differentLayers_consistent[:,3]
 
 
-differentLayers_inconsistent=np.array([[11,25,2,1],
-                          [25,23,7,0],
-                          [46,28,18,0],
-                          [44,21,10,2]]);
-
-differentLayers_inconsistent[:,0]=differentLayers_inconsistent[:,0]-differentLayers_inconsistent[:,2]
-differentLayers_inconsistent[:,1]=differentLayers_inconsistent[:,1]-differentLayers_inconsistent[:,2]
-differentLayers_inconsistent[:,2]=differentLayers_inconsistent[:,2]-differentLayers_inconsistent[:,3]
-
-
-differentStruct=np.array([[47,41,33,15],
-                          [48,39,37,29]]);
+differentStruct=np.array([[14.0,9.0,16.0,17.0],
+                          [12.0,3.0,9.0,29.0]]);
                           
-differentStruct[:,0]=differentStruct[:,0]-differentStruct[:,2]
-differentStruct[:,1]=differentStruct[:,1]-differentStruct[:,2]
-differentStruct[:,2]=differentStruct[:,2]-differentStruct[:,3]
 
 
-df_inconsistent = pd.DataFrame(inconsistent, columns=['V-only', 'A-only', 'V+A(inconsistent)', 'V+A(consistent)'])
-df_consistent = pd.DataFrame(consistent, columns=['V-only', 'A-only', 'V+A(inconsistent)', 'V+A(consistent)'])
+# df_inconsistent = pd.DataFrame(inconsistent, columns=['V-only', 'A-only', 'V+A(inconsistent)', 'V+A(consistent)'])
+# df_consistent = pd.DataFrame(consistent, columns=['V-only', 'A-only', 'V+A(inconsistent)', 'V+A(consistent)'])
+# df_layers_consist = pd.DataFrame(differentLayers_consistent, columns=['V-only', 'A-only', 'V+A(inconsistent)', 'V+A(consistent)'])
+# df_layers_inconsist = pd.DataFrame(differentLayers_inconsistent, columns=['V-only', 'A-only', 'V+A(inconsistent)', 'V+A(consistent)'])
+# df_structs = pd.DataFrame(differentStruct, columns=['V-only', 'A-only', 'V+A(inconsistent)', 'V+A(consistent)'])
+
+
 df_layers_consist = pd.DataFrame(differentLayers_consistent, columns=['V-only', 'A-only', 'V+A(inconsistent)', 'V+A(consistent)'])
 df_layers_inconsist = pd.DataFrame(differentLayers_inconsistent, columns=['V-only', 'A-only', 'V+A(inconsistent)', 'V+A(consistent)'])
 df_structs = pd.DataFrame(differentStruct, columns=['V-only', 'A-only', 'V+A(inconsistent)', 'V+A(consistent)'])
 
 
-ax = plt.subplot(3,2,1)
-df_inconsistent.plot(kind='bar', stacked=True,ax=plt.gca());
-plt.ylabel('Number of Cells')
-plt.xlabel('Layer')
-plt.title("Inconsistent V+A")
-plt.ylim([-2,66])
-# ax.set_xticklabels(itrList);
-ax.set_xticklabels( ('Layer 1','Layer 2','Layer 3','Layer 4') )
+# ax = plt.subplot(3,2,1)
+# df_inconsistent.plot(kind='bar', stacked=True,ax=plt.gca());
+# plt.ylabel('Number of Cells')
+# plt.xlabel('Layer')
+# plt.title("Inconsistent V+A")
+# plt.ylim([-2,66])
+# # ax.set_xticklabels(itrList);
+# ax.set_xticklabels( ('Layer 1','Layer 2','Layer 3','Layer 4') )
+# 
+# 
+# ax=plt.subplot(3,2,2)
+# df_consistent.plot(kind='bar', stacked=True,ax=plt.gca());
+# plt.ylabel('Number of Cells')
+# plt.xlabel('Layer')
+# plt.title("Consistent V+A")
+# plt.ylim([-2,66])
+# # ax.set_xticklabels(itrList);
+# ax.set_xticklabels( ('Layer 1','Layer 2','Layer 3','Layer 4') )
 
 
-ax=plt.subplot(3,2,2)
-df_consistent.plot(kind='bar', stacked=True,ax=plt.gca());
-plt.ylabel('Number of Cells')
-plt.xlabel('Layer')
-plt.title("Consistent V+A")
-plt.ylim([-2,66])
-# ax.set_xticklabels(itrList);
-ax.set_xticklabels( ('Layer 1','Layer 2','Layer 3','Layer 4') )
 
-
-
-ax=plt.subplot(3,2,3)
+ax=plt.subplot(1,3,1)
 df_layers_inconsist.plot(kind='bar', stacked=True,ax=plt.gca());
 plt.ylabel('Number of Cells')
 plt.xlabel('Number of Layers')
@@ -103,7 +80,7 @@ ax.set_xticklabels( ('1 Layer', '2 Layers','3 Layers', '4 Layers') )
 
 
 
-ax=plt.subplot(3,2,4)
+ax=plt.subplot(1,3,2)
 df_layers_consist.plot(kind='bar', stacked=True,ax=plt.gca());
 plt.ylabel('Number of Cells')
 plt.xlabel('Number of Layers')
@@ -118,14 +95,14 @@ ax.set_xticklabels( ('1 Layer', '2 Layers','3 Layers', '4 Layers') )
 
 
 
-ax=plt.subplot(3,2,5)
+ax=plt.subplot(1,3,3)
 df_structs.plot(kind='bar', stacked=True,ax=plt.gca());
 plt.ylabel('Number of Cells')
 plt.xlabel('Different Structures')
 plt.title("Networks with Different Structures")
 plt.ylim([-2,66])
 # ax.set_xticklabels(itrList);
-ax.set_xticklabels( ('2 stage framework', 'mixed framework') )
+ax.set_xticklabels( ('2-Stage Framework', 'Mixed-Input Framework') )
 # 
 # 
 # 

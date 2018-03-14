@@ -178,13 +178,15 @@ def model_twoStages_4Layers_64():
     inputs_V_reshaped = Reshape((dim*dim,), input_shape=(dim, dim))(inputs_V);
     vl1 = Dense(layerDim, activation='sigmoid')(inputs_V_reshaped);
     vl2 = Dense(layerDim, activation='sigmoid')(vl1)
+    vl3 = Dense(layerDim, activation='sigmoid')(vl2)
     
     inputs_A = Input(shape=(int(dim/2),dim*2,))
     inputs_A_reshaped = Reshape((dim*dim,), input_shape=(int(dim/2), dim*2))(inputs_A);
     al1 = Dense(layerDim, activation='sigmoid')(inputs_A_reshaped);
     al2 = Dense(layerDim, activation='sigmoid')(al1)
+    al3 = Dense(layerDim, activation='sigmoid')(al2)
     
-    x1 = concatenate([vl2, al2]);
+    x1 = concatenate([vl3, al3]);
     encoded = Dense(layerDim, activation='sigmoid')(x1)
     
     x1 = Dense(layerDim, activation='relu')(encoded)

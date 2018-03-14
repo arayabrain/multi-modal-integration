@@ -133,20 +133,29 @@ def countCellsWithSelectivity(infoList1, infoList2, results, plotOn=True,infoThr
     cond_1_trained = np.zeros(indexShape,dtype=bool) 
     cond_2_untrained = np.zeros(indexShape,dtype=bool)
     cond_2_trained = np.zeros(indexShape,dtype=bool) 
-
+    
+    infoThreshold1=0.9629458012826149#np.percentile(infoList1[1],80);
+    infoThreshold2=0.9440938439990594#np.percentile(infoList2[1],80);
+    
+#     #take max info of each cell
+#     IRs_flattened = np.zeros((nObj,indexShape[0]));
+#     for obj in range(nObj):
+#         IRs_flattened[obj] = infoList1[1][obj].flatten();    
+# 
+#     IR_max=np.max(IRs_flattened,axis=0);
             
     count_1_trained = 0;
     count_1_untrained = 0;
     
     for s in range(nObj):
-        cond_1_untrained = (cond_1_untrained|(infoList2[0][s]>infoThreshold))
-        cond_1_trained = (cond_1_trained| (infoList2[1][s]>infoThreshold))
+        cond_2_untrained = (cond_2_untrained | (infoList1[0][s]>infoThreshold1)) # check if cells are selective to any of the visual inpputs
+        cond_2_trained = (cond_2_trained | (infoList1[1][s]>infoThreshold1))
+
+        cond_1_untrained = (cond_1_untrained|(infoList2[0][s]>infoThreshold2)) # check if cells are selective to any of the auditory inputs
+        cond_1_trained = (cond_1_trained| (infoList2[1][s]>infoThreshold2))
         
-        cond_2_untrained = (cond_2_untrained | (infoList1[0][s]>infoThreshold))
-        cond_2_trained = (cond_2_trained | (infoList1[1][s]>infoThreshold))
-        
-        
-    count_1_untrained = len(infoList2[0][0,cond_1_untrained & cond_2_untrained]);
+
+    count_1_untrained = len(infoList2[0][0,cond_1_untrained & cond_2_untrained]); # number of cells that is selective to at least one visual input and one auditory input
     count_1_trained = len(infoList2[1][0,cond_1_trained & cond_2_trained]);
     
     
@@ -166,8 +175,8 @@ def countCellsWithSelectivity(infoList1, infoList2, results, plotOn=True,infoThr
 #         
 #         for s in range(nObj):
 #             # objIndex = 0;
-#             cond_1 = (infoList2[1][s]>infoThreshold)
-#             cond_2 = (infoList1[1][s]>infoThreshold)
+#             cond_1 = (infoList2[1][s]>infoThreshold2)
+#             cond_2 = (infoList1[1][s]>infoThreshold1)
 #             
 #             
 #             pts=np.argwhere((cond_1 ^ cond_2) & (cond_1_trained ^ cond_2_trained));    
@@ -224,8 +233,8 @@ def countCellsWithSelectivity(infoList1, infoList2, results, plotOn=True,infoThr
 #         
 #         for s in range(nObj):
 #             # objIndex = 0;
-#             cond_1 = (infoList2[1][s]>infoThreshold)
-#             cond_2 = (infoList1[1][s]>infoThreshold)
+#             cond_1 = (infoList2[1][s]>infoThreshold1)
+#             cond_2 = (infoList1[1][s]>infoThreshold2)
 #             
 #             
 #             pts=np.argwhere((cond_1 ^ cond_2) & (cond_1_trained & cond_2_trained));    
@@ -276,11 +285,11 @@ def countCellsWithSelectivity(infoList1, infoList2, results, plotOn=True,infoThr
     count_2_trained = 0;
     count_2_untrained = 0;
     for s in range(nObj):
-        cond_1_untrained = (infoList1[0][s]>infoThreshold)
-        cond_1_trained = (infoList1[1][s]>infoThreshold)
+        cond_1_untrained = (infoList1[0][s]>infoThreshold1)
+        cond_1_trained = (infoList1[1][s]>infoThreshold1)
         
-        cond_2_untrained = (infoList2[0][s]>infoThreshold)
-        cond_2_trained = (infoList2[1][s]>infoThreshold)
+        cond_2_untrained = (infoList2[0][s]>infoThreshold2)
+        cond_2_trained = (infoList2[1][s]>infoThreshold2)
         
         cond_untrained= (cond_untrained | (cond_1_untrained & cond_2_untrained));
         cond_trained = (cond_trained | (cond_1_trained & cond_2_trained));
@@ -290,30 +299,30 @@ def countCellsWithSelectivity(infoList1, infoList2, results, plotOn=True,infoThr
             
             
     countSelectiveCells1=np.zeros((4,));
-    countSelectiveCells1[0]=len(infoList1[0][0,np.max(infoList1[1],axis=0)>infoThreshold])-count_1_untrained;
-    countSelectiveCells1[1]=len(infoList2[0][0,np.max(infoList2[1],axis=0)>infoThreshold])-count_1_untrained;
+    countSelectiveCells1[0]=len(infoList1[0][0,np.max(infoList1[1],axis=0)>infoThreshold1])-count_1_untrained;
+    countSelectiveCells1[1]=len(infoList2[0][0,np.max(infoList2[1],axis=0)>infoThreshold2])-count_1_untrained;
     countSelectiveCells1[2]=count_1_untrained-count_2_untrained;
     countSelectiveCells1[3]=count_2_untrained;
     
     
     
     print("** results of untrained network **")    
-    print("number of cells carry info>"+ str(infoThreshold)+" about at least one Visual Input category (untrained): "+str(countSelectiveCells1[0]));
-    print("number of cells carry info>"+ str(infoThreshold)+" about at least one Audio Input category (untrained): "+str(countSelectiveCells1[1]));
-    print("number of cells carry info>"+ str(infoThreshold)+" about at least one V and one A Input categories (can be inconsistent) (untrained): " + str(countSelectiveCells1[2]));
-    print("number of cells carry info>"+ str(infoThreshold)+" about at least one consistent V and A Input stimulus (untrained): " + str(countSelectiveCells1[3]));
+    print("number of cells carry info>"+ str(infoThreshold1)+" about at least one Visual Input category (untrained): "+str(countSelectiveCells1[0]));
+    print("number of cells carry info>"+ str(infoThreshold2)+" about at least one Audio Input category (untrained): "+str(countSelectiveCells1[1]));
+    print("number of cells carry info>"+ str(infoThreshold1)+" about at least one V and info>"+  str(infoThreshold2)+ " about at least one A Input categories (can be inconsistent) (untrained): " + str(countSelectiveCells1[2]));
+    print("number of cells carry info>"+ str(infoThreshold1) + " about at least one V and info>"+ str(infoThreshold2)+" about at least one A Input stimulus (consistent) (untrained): " + str(countSelectiveCells1[3]));
     print("["+str(countSelectiveCells1[0]) + "," + str(countSelectiveCells1[1]) + "," + str(countSelectiveCells1[2]) + "," +   str(countSelectiveCells1[3]) + "]");
     
     countSelectiveCells2=np.zeros((4,))
-    countSelectiveCells2[0]=len(infoList1[1][0,np.max(infoList1[1],axis=0)>infoThreshold])-count_1_trained;
-    countSelectiveCells2[1]=len(infoList2[1][0,np.max(infoList2[1],axis=0)>infoThreshold])-count_1_trained;
+    countSelectiveCells2[0]=len(infoList1[1][0,np.max(infoList1[1],axis=0)>infoThreshold1])-count_1_trained;
+    countSelectiveCells2[1]=len(infoList2[1][0,np.max(infoList2[1],axis=0)>infoThreshold2])-count_1_trained;
     countSelectiveCells2[2]=count_1_trained-count_2_trained;
     countSelectiveCells2[3]=count_2_trained;
     print("** results of trained network **")
-    print("number of cells carry info>"+ str(infoThreshold)+" about at least one Visual Input category (trained): "+str(countSelectiveCells2[0]));
-    print("number of cells carry info>"+ str(infoThreshold)+" about at least one Audio Input category (trained): "+str(countSelectiveCells2[1]));
-    print("number of cells carry info>"+ str(infoThreshold)+" about at least one V and one A Input categories (can be inconsistent) (trained): " + str(countSelectiveCells2[2]));
-    print("number of cells carry info>"+ str(infoThreshold)+" about at least one consistent V and A Input stimulus (trained): " + str(countSelectiveCells2[3]));
+    print("number of cells carry info>"+ str(infoThreshold1)+" about at least one Visual Input category (trained): "+str(countSelectiveCells2[0]));
+    print("number of cells carry info>"+ str(infoThreshold2)+" about at least one Audio Input category (trained): "+str(countSelectiveCells2[1]));
+    print("number of cells carry info>"+ str(infoThreshold1)+" about at least one V and info>"+  str(infoThreshold2)+ " about at least one A Input categories (can be inconsistent) (trained): " + str(countSelectiveCells2[2]));
+    print("number of cells carry info>"+ str(infoThreshold1) + " about at least one V and info>"+ str(infoThreshold2)+" about at least one A Input stimulus (consistent) (trained): " + str(countSelectiveCells2[3]));
     print("["+str(countSelectiveCells2[0]) + "," + str(countSelectiveCells2[1]) + "," + str(countSelectiveCells2[2]) + "," +   str(countSelectiveCells2[3]) + "]");
     
     
@@ -334,8 +343,8 @@ def countCellsWithSelectivity(infoList1, infoList2, results, plotOn=True,infoThr
         for s in range(nObj):
             # objIndex = 0;
         
-            cond_1 = (infoList1[1][s]>infoThreshold)
-            cond_2 = (infoList2[1][s]>infoThreshold)
+            cond_1 = (infoList1[1][s]>infoThreshold1)
+            cond_2 = (infoList2[1][s]>infoThreshold2)
             pts=np.argwhere(cond_1 & cond_2);    
             plt.gray()
             

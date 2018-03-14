@@ -1,9 +1,9 @@
 *.pyc
 *.png
-*.wav
 *.ipynb
 *.weights
 *.h5
 *.xml
 *.jpg
+*.wav
 data/wikipedia_info/*
