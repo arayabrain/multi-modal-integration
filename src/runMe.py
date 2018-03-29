@@ -396,8 +396,7 @@ if flag_mutualInformationAnalysis:
     print("** IA_Trained -- sum: " + str(np.sum(IA_trained)) + ", max: " + str(np.max(IA_trained)) + ", mean: " + str(np.mean(IA_trained)));
     print("** IV_Trained_shuffled -- sum: " + str(np.sum(IV_shuffled)) + ", max: " + str(np.max(IV_shuffled)) + ", mean: " + str(np.mean(IV_shuffled)));
     print("** IA_Trained_shuffled -- sum: " + str(np.sum(IA_shuffled)) + ", max: " + str(np.max(IA_shuffled)) + ", mean: " + str(np.mean(IA_shuffled)));
-
- 
+    input("Press Enter to continue...") 
  
 ######################################
 ## Single cell information analysis ##
@@ -426,7 +425,8 @@ if flag_singleCellInfoAnalysis:
         results_reshaped_for_analysis_trained[s,:50] = predictedResult_trained[s*50:(s+1)*50]
         results_reshaped_for_analysis_trained[s,50:100] = predictedResult_trained[500+s*50:500+(s+1)*50]
         results_reshaped_for_analysis_trained[s,100:150] = predictedResult_trained[1000+s*50:1000+(s+1)*50]
-               
+          
+    print("** info analysis for all V only, A only, V+A")     
     IRs_list, IRs_weighted_list = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=flag_plot_singleCell,nBins=10)
     # plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_weighted_list[1],results=results_reshaped_for_analysis_trained);
              
@@ -450,7 +450,7 @@ if flag_singleCellInfoAnalysis:
         results_reshaped_for_analysis_untrained_shuffled[obj,trans] = results_reshaped_for_analysis_untrained[obj_shuffled,trans_shuffled];
         results_reshaped_for_analysis_trained_shuffled[obj,trans] = results_reshaped_for_analysis_trained[obj_shuffled,trans_shuffled];
      
-  
+    print("** info analysis for all V only, A only, V+A (shuffled)")  
     IRs_list_oneModalityAtTime_shuffled, IRs_weighted_list_oneModalityAtTime = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained_shuffled,results_reshaped_for_analysis_trained_shuffled,plotOn=flag_plot_singleCell,nBins=10)
     pkl_file = open('data/'+experimentName+'_singleCellInfo_all_shuffled_l'+str(outputLayerOfPartialNet)+'.pkl', 'wb')
     pickle.dump(IRs_list_oneModalityAtTime_shuffled, pkl_file)
@@ -467,7 +467,8 @@ if flag_singleCellInfoAnalysis:
         results_reshaped_for_analysis_untrained[s,:50] = predictedResult_untrained[s*50:(s+1)*50]
                
         results_reshaped_for_analysis_trained[s,:50] = predictedResult_trained[s*50:(s+1)*50]
-               
+          
+    print("** info analysis based on Visual Inputs")       
     IRs_list_VOnly, IRs_weighted_list_VOnly = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=flag_plot_singleCell,nBins=10)
            
 #     plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_weighted_list_VOnly[1],results=results_all_trained,title="based on info about V");
@@ -488,7 +489,7 @@ if flag_singleCellInfoAnalysis:
                
         results_reshaped_for_analysis_trained[s,:50] = predictedResult_trained[500+s*50:500+(s+1)*50]
                
-           
+    print("** info analysis based on Audio Inputs")   
     IRs_list_AOnly, IRs_weighted_list_AOnly = analysis.singleCellInfoAnalysis(results_reshaped_for_analysis_untrained,results_reshaped_for_analysis_trained,plotOn=flag_plot_singleCell,nBins=10)
            
 #     plotting.plotActivityOfCellsWithMaxInfo(IRs=IRs_weighted_list_AOnly[1],results=results_all_trained,title="based on info about A");
@@ -502,7 +503,7 @@ if flag_singleCellInfoAnalysis:
     ## 4. show the stat of the single cell info analysis ##
          
     analysis.countCellsWithSelectivity(IRs_list_VOnly,IRs_list_AOnly,results_all_trained,plotOn=True,infoThreshold = 1.0);
-
+    input("Press Enter to continue...")
 
 
 
@@ -655,7 +656,7 @@ if flag_sharedRepLearning:
     score = model_crossRep.evaluate(predictedResult_crossRep_test_A, yTestAudio, verbose=0)
     # print('Test loss (A): ', score[0])
     print('Test acc. (A): ', score[1])
-    
+    input("Press Enter to continue...")
     
     
     
@@ -693,5 +694,5 @@ if flag_sharedRepLearning:
     score = model_crossRep.evaluate(predictedResult_crossRep_test_A, yTestAudio, verbose=0)
     # print('Test loss (A): ', score[0])
     print('Test acc. (A): ', score[1])
-        
+
 
