@@ -6,26 +6,26 @@ from keras.utils import plot_model
 import importInput
 import plotting
 import analysis
-
+import models
 
 
 #################
 ## PARAMS      ##
 #################
 
-flag_useInconsistentTrainingDataset = True;
+flag_useInconsistentTrainingDataset = False;
 
 flag_trainingOn = False; #if true, then load the saved weights
 maxItrForTraining = 5000;
 
-flag_sharedRepLearning = False;
+flag_sharedRepLearning = True;
 maxItrForSharedRepLearning = 1000;
 
-flag_plotReconstructedImages = False;
-flag_mutualInformationAnalysis = False;
+flag_plotReconstructedImages = True;
+flag_mutualInformationAnalysis = True;
 flag_singleCellInfoAnalysis = True;
-flag_plot_singleCell = False;
-flag_PCA = False;
+flag_plot_singleCell = True;
+flag_PCA = True;
 
 
 # experimentName = "171221_revisedStimuli_4layers_64_consistant";
@@ -36,6 +36,31 @@ if flag_useInconsistentTrainingDataset:
     experimentName = experimentName + "_inconsistent";
 else:
     experimentName = experimentName + "_consistent";
+
+
+
+##########################
+## Setting up the model ##
+##########################
+
+## original 4 layer network
+outputLayerOfPartialNet = 4;
+model_full, model_partial = models.model_mixedInput_4Layers_64(outputLayerOfPartialNet=outputLayerOfPartialNet);
+
+## different number of layers
+# model_full, model_partial = models.model_mixedInput_3Layers_64();
+# model_full, model_partial = models.model_mixedInput_2Layers_64();
+# model_full, model_partial = models.model_mixedInput_1Layer_64();
+
+## two-stage framework
+# model_full, model_partial = models.model_twoStages_4Layers_64();
+
+
+
+model_full.compile(optimizer='adadelta', loss='binary_crossentropy')
+model_partial.compile(optimizer='adadelta', loss='binary_crossentropy')
+# model_full.load_weights('data/171127_autoencoder_oneInput_itr_0.weights');
+print("** model is loaded and compiled")
 
 
 
@@ -139,30 +164,12 @@ print("** created: xTrainMnist_comb, xTrainAudio_comb, xTestMnist_comb_allon, xT
 
 
 
-##########################
-## Setting up the model ##
-##########################
-
-import models
-
-## original 4 layer network
-outputLayerOfPartialNet = 4;
-model_full, model_partial = models.model_mixedInput_4Layers_64(outputLayerOfPartialNet=outputLayerOfPartialNet);
-
-## different number of layers
-# model_full, model_partial = models.model_mixedInput_3Layers_64();
-# model_full, model_partial = models.model_mixedInput_2Layers_64();
-# model_full, model_partial = models.model_mixedInput_1Layer_64();
-
-## two-stage framework
-# model_full, model_partial = models.model_twoStages_4Layers_64();
 
 
 
-model_full.compile(optimizer='adadelta', loss='binary_crossentropy')
-model_partial.compile(optimizer='adadelta', loss='binary_crossentropy')
-# model_full.load_weights('data/171127_autoencoder_oneInput_itr_0.weights');
-print("** model is loaded and compiled")
+
+
+
 
 
 ########################

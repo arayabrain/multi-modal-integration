@@ -6,6 +6,11 @@ from sklearn.linear_model import LogisticRegression
 
 # from statsmodels.graphics.tukeyplot import results
 def singleCellInfoAnalysis(results_untrained,results_trained,plotOn=True,thresholdMode = False, nBins=3,threshold = 0.7):
+    #####################
+    ## Function that receives the arrays of the firing rates of the cells of an untrained network and a trained network, each in a 3D arrangement (row, col, depth). 
+    ## This function returns two lists of the calculated single cell information: information for untrained and trained network and information weighted based on the degree of activations of the cells (testing purpose) 
+    #####################
+    
     if thresholdMode:
         nBins=2;
     nObj = np.shape(results_untrained)[0];
@@ -15,10 +20,10 @@ def singleCellInfoAnalysis(results_untrained,results_trained,plotOn=True,thresho
     nDep = np.shape(results_untrained)[4]
     
 
-    IRs_list = [];#np.zeros((nObj,nRow,nCol,nDep));#I(R,s) single cell information
-    IRs_weighted_list = []#np.zeros((nObj,nRow,nCol,nDep));#I(R,s) single cell information
-    IRs_flattened_list = []
-    IRs_sorted_list = []#np.zeros((nObj,nRow*nCol*nDep));
+    IRs_list = []; #List containing the single cell information for untrained and trained network (3D) 
+    IRs_weighted_list = [] #List containing the single cell information (weighted - just for testing purpose) for untrained and trained network (3D) 
+    IRs_flattened_list = [] #List containing the single cell information for untrained and trained network (flattened) 
+    IRs_sorted_list = []##List containing the single cell information for untrained and trained network (flattened and sorted) 
 
 
 
@@ -121,10 +126,21 @@ def singleCellInfoAnalysis(results_untrained,results_trained,plotOn=True,thresho
 
 
 def countCellsWithSelectivity(infoList1, infoList2, results, plotOn=True,infoThreshold = 1.0):
-    ## count number of cells developed to be selective to a stimulus    
+    #########################
+    ## Function that counts the number of cells developed to be selective to one of four different categories
+    ## 1. cells that are selective to digits of only visual input
+    ## 2. cells that are selective to digits of only auditory input
+    ## 3. cells that are selective to inconsistent digits of both visual and auditory inputs
+    ## 4. cells that are selective to at least one consistent digits of both visual and auditory inputs
+    ## inputs:
+    ## - infoList1 (e.g., a list of the info calculated based on visual input (untrained and trained)
+    ## - infoList2 (e.g., a list of the info calculated based on auditory input (untrained and trained)
+    ## - results: a list of the firing rate of the cells to all conditions (V only, A only, and both V and A) to plot 
+    ## output:
+    ## - the results counted for the trained network is returned  
+    #########################
     nObj = np.shape(results)[0];
     nTrans = np.shape(results)[1];
-    
     
     indexShape = np.shape(infoList2[0][0]);
        
@@ -134,16 +150,10 @@ def countCellsWithSelectivity(infoList1, infoList2, results, plotOn=True,infoThr
     cond_2_untrained = np.zeros(indexShape,dtype=bool)
     cond_2_trained = np.zeros(indexShape,dtype=bool) 
     
+    #determine the threshold based on a particualr percentile of the amount of the information within each layer
     infoThreshold1=0.9629458012826149#np.percentile(infoList1[1],80);
     infoThreshold2=0.9440938439990594#np.percentile(infoList2[1],80);
-    
-#     #take max info of each cell
-#     IRs_flattened = np.zeros((nObj,indexShape[0]));
-#     for obj in range(nObj):
-#         IRs_flattened[obj] = infoList1[1][obj].flatten();    
-# 
-#     IR_max=np.max(IRs_flattened,axis=0);
-            
+                
     count_1_trained = 0;
     count_1_untrained = 0;
     
@@ -398,15 +408,9 @@ def runPCA(results):
     nObj = 10;
     nTrans = 50;
 
-#     comp1=0;
-#     comp2=1;
-    
-#     comp1 = [0,0,1]
-#     comp2 = [1,2,2]
-    comp1 = [1]
-    comp2 = [2]
-    
-#     col_tab10 = plt.cm.get_cmap('tab10').colors;
+    # set the list of the dimensions to be plotted
+    comp1 = [1] # dimension 1
+    comp2 = [2] # dimension 2
     
     for i in range(len(comp1)):
     
@@ -689,6 +693,9 @@ def runPCAAboutUnits(results_untrained,results_trained,infV,infA):
 
 
 def mutualInfo(S,R,nBins=5):
+    ###############
+    ## function that calculates the mutual information between the pattern of activations in S and R.
+    ###############
     nStim = np.shape(S)[0];
     nUnitS=np.shape(S)[1];
     nUnitR=np.shape(R)[1];
